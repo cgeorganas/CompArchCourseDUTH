@@ -1,0 +1,4 @@
+addi x11,x0,0x1
+addi x12,x0,0x2
+addi x13,x0,0x3
+addi x14,x0,0x4
