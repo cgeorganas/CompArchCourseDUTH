@@ -1,5 +1,6 @@
 quit -sim
 file delete -force work
+file delete -force vsim.wlf
 
 riscv64-unknown-elf-as -march=rv32im -mabi=ilp32 tests.s -o tests.o
 riscv64-unknown-elf-objdump -d tests.o > tests.dmp
@@ -14,3 +15,5 @@ log -r /*
 add wave -position end  sim:/processor_tb/proc_module/id_stage_0/regf_0/registers
 
 run -all
+
+radix hex

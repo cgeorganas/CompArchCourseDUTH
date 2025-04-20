@@ -41,16 +41,24 @@ always_comb begin
 			dest_reg = `DEST_IS_REGC;
 
 			case({inst[14:12], inst[31:25]})
-				`ADD_INST  : alu_func = `ALU_ADD;   
-				`SUB_INST  : alu_func = `ALU_SUB;    
-				`XOR_INST  : alu_func = `ALU_XOR;   
-				`OR_INST   : alu_func = `ALU_OR;   
-				`AND_INST  : alu_func = `ALU_AND;   
-				`SLL_INST  : alu_func = `ALU_SLL;   
-				`SRL_INST  : alu_func = `ALU_SRL;   
-				`SRA_INST  : alu_func = `ALU_SRA;   
-				`SLT_INST  : alu_func = `ALU_SLT;   
-				`SLTU_INST : alu_func = `ALU_SLTU;
+				`ADD_INST    : alu_func = `ALU_ADD;   
+				`SUB_INST    : alu_func = `ALU_SUB;    
+				`XOR_INST    : alu_func = `ALU_XOR;   
+				`OR_INST     : alu_func = `ALU_OR;   
+				`AND_INST    : alu_func = `ALU_AND;   
+				`SLL_INST    : alu_func = `ALU_SLL;   
+				`SRL_INST    : alu_func = `ALU_SRL;   
+				`SRA_INST    : alu_func = `ALU_SRA;   
+				`SLT_INST    : alu_func = `ALU_SLT;   
+				`SLTU_INST   : alu_func = `ALU_SLTU;
+				`MUL_INST    : alu_func = `ALU_MUL;
+				`MULH_INST   : alu_func = `ALU_MULH;
+				`MULHSU_INST : alu_func = `ALU_MULHSU;
+				`MULHU_INST  : alu_func = `ALU_MULHU;
+				// `DIV_INST    : alu_func = `ALU_DIV;
+				// `DIVU_INST   : alu_func = `ALU_DIVU;
+				// `REM_INST    : alu_func = `ALU_REM;
+				// `REMU_INST   : alu_func = `ALU_REMU;
 				default: illegal = `TRUE;
 			endcase 
 		end //R-TYPE
