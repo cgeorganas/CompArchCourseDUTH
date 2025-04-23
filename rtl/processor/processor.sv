@@ -148,6 +148,9 @@ if_stage if_stage_0 (
 .ex_target_PC_out	(ex_mem_target_PC),
 .Imem2proc_data		(instruction),
 
+.id_rd				(id_dest_reg_idx_out),
+.ex_rd				(id_ex_dest_reg_idx),
+.mem_rd				(ex_mem_dest_reg_idx),
 
 // Outputs
 .if_NPC_out			(if_NPC_out),
