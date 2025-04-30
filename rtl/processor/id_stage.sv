@@ -173,6 +173,11 @@ input logic [4:0]	mem_wb_dest_reg_idx, 	//index of rd
 input logic [31:0] 	wb_reg_wr_data_out, 	// Reg write data from WB Stage
 input logic         if_id_valid_inst,
 
+input logic [3:0]	if_forward,
+input logic [31:0]	ex_alu_result_out,
+input logic [31:0]	ex_mem_alu_result,
+input logic [31:0]	mem_wb_alu_result,
+
 output logic [31:0] id_ra_value_out,    	// reg A value
 output logic [31:0] id_rb_value_out,    	// reg B value
 output logic [31:0]	id_immediate_out,		// sign-extended 32-bit immediate
@@ -209,17 +214,34 @@ assign rc_idx=if_id_IR[11:7];  // inst operand C register index
 logic write_en;
 assign write_en=mem_wb_valid_inst & mem_wb_reg_wr;
 
+logic [31:0] regf_rda, regf_rdb;
+
 regfile regf_0(.clk		(clk),
 			   .rst		(rst),
 			   .rda_idx	(ra_idx),
-			   .rda_out	(id_ra_value_out), 
+			   .rda_out	(regf_rda), 
 			   .rdb_idx	(rb_idx),
-			   .rdb_out	(rb_val), 
+			   .rdb_out	(regf_rdb), 
 			   .wr_en	(write_en),
 			   .wr_idx	(mem_wb_dest_reg_idx),
 			   .wr_data	(wb_reg_wr_data_out));
 
-assign id_rb_value_out=rb_val;
+always_comb begin
+	case (if_forward[1:0])
+		2'b00:		id_ra_value_out = regf_rda;
+		2'b01:		id_ra_value_out = ex_alu_result_out;
+		2'b10:		id_ra_value_out = ex_mem_alu_result;
+		2'b11:		id_ra_value_out = mem_wb_alu_result;
+		default:	id_ra_value_out = regf_rda;
+	endcase
+	case (if_forward[3:2])
+		2'b00:		id_rb_value_out = regf_rdb;
+		2'b01:		id_rb_value_out = ex_alu_result_out;
+		2'b10:		id_rb_value_out = ex_mem_alu_result;
+		2'b11:		id_rb_value_out = mem_wb_alu_result;
+		default:	id_rb_value_out = regf_rdb;
+	endcase
+end
 
 // instantiate the instruction inst_decoder
 inst_decoder inst_decoder_0(.inst	        (if_id_IR),

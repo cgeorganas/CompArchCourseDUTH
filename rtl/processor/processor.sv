@@ -53,6 +53,7 @@ module processor(
 // Pipeline register enables
 logic 			if_id_enable, id_ex_enable, ex_mem_enable, mem_wb_enable;
 
+logic [3:0]		if_forward;
 
 // Outputs from ID stage
 logic           id_reg_wr_out;
@@ -157,7 +158,8 @@ if_stage if_stage_0 (
 .if_PC_out			(if_PC_out), 
 .if_IR_out			(if_IR_out),
 .proc2Imem_addr		(pc_addr),
-.if_valid_inst_out  (if_valid_inst_out)
+.if_valid_inst_out  (if_valid_inst_out),
+.if_forward			(if_forward)
 );
 
 //////////////////////////////////////////////////
@@ -199,6 +201,10 @@ id_stage id_stage_0 (
 .mem_wb_reg_wr			(mem_wb_reg_wr), 
 .wb_reg_wr_data_out     (wb_reg_wr_data_out),  	
 .if_id_valid_inst       (if_id_valid_inst),
+.if_forward				(if_forward),
+.ex_alu_result_out		(ex_alu_result_out),
+.ex_mem_alu_result		(ex_mem_alu_result),
+.mem_wb_alu_result		(mem_wb_alu_result),
 
 // Outputs
 .id_reg_wr_out          (id_reg_wr_out),
