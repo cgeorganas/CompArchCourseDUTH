@@ -22,7 +22,7 @@ module if_stage (
 );
 
 // RAW data hazard detector
-logic [2:0] rs_valid; // which register fields does the instruction use
+logic [1:0] rs_valid; // which register fields does the instruction use
 always_comb begin
 	case(Imem2proc_data[6:0])
 		`R_TYPE, `S_TYPE, `B_TYPE				: rs_valid = 2'b11; // uses rs1 and rs2
@@ -31,7 +31,7 @@ always_comb begin
 	endcase
 end
 
-logic [2:0] rs_match;
+logic [1:0] rs_match;
 always_comb begin
 	case (Imem2proc_data[19:15]) //rs1
 		5'b00000					: rs_match[0] = `FALSE;
