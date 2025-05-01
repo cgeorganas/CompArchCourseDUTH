@@ -61,10 +61,10 @@ alu alu_0 (// Inputs
 		  .opb(alu_opb),
 		  .br_cond_opa(br_cond_opa),
 		  .br_cond_opb(br_cond_opb),
-		  .func(id_ex_alu_func),
-		  .id_ex_funct3(id_ex_funct3),
+		  .operation(id_ex_alu_func),
+		  .funct3(id_ex_funct3),
 		  .result(alu_result),
-		  .brcond_result(brcond_result));
+		  .br_cond_result(brcond_result));
 
 assign ex_target_PC_out = pc_add_opa + id_ex_imm;
 
