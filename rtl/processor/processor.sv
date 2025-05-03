@@ -53,16 +53,14 @@ module processor(
 // Pipeline register enables
 logic 			if_id_enable, id_ex_enable, ex_mem_enable, mem_wb_enable;
 
-logic [3:0]		if_forward;
-
 // Outputs from ID stage
 logic           id_reg_wr_out;
 logic [2:0]		id_funct3_out;
 logic [31:0]   	id_rega_out;
 logic [31:0]   	id_regb_out;
 logic [31:0]	id_immediate_out;
-logic [1:0] 	id_opa_select_out;
-logic [1:0] 	id_opb_select_out;
+logic [2:0] 	id_opa_select_out;
+logic [2:0] 	id_opb_select_out;
 logic [4:0]   	id_dest_reg_idx_out;
 logic [4:0]     id_alu_func_out;
 logic         	id_rd_mem_out;
@@ -79,8 +77,8 @@ logic [2:0]		id_ex_funct3;
 logic [31:0]   	id_ex_rega;
 logic [31:0]   	id_ex_regb;
 logic [31:0] 	id_ex_imm;
-logic [1:0]		id_ex_opa_select;
-logic [1:0]		id_ex_opb_select;
+logic [2:0]		id_ex_opa_select;
+logic [2:0]		id_ex_opb_select;
 logic [4:0]   	id_ex_dest_reg_idx;
 logic [4:0]     id_ex_alu_func;
 logic           id_ex_rd_mem;
@@ -149,17 +147,12 @@ if_stage if_stage_0 (
 .ex_target_PC_out	(ex_mem_target_PC),
 .Imem2proc_data		(instruction),
 
-.id_rd				(id_dest_reg_idx_out),
-.ex_rd				(id_ex_dest_reg_idx),
-.mem_rd				(ex_mem_dest_reg_idx),
-
 // Outputs
 .if_NPC_out			(if_NPC_out),
 .if_PC_out			(if_PC_out), 
 .if_IR_out			(if_IR_out),
 .proc2Imem_addr		(pc_addr),
-.if_valid_inst_out  (if_valid_inst_out),
-.if_forward			(if_forward)
+.if_valid_inst_out  (if_valid_inst_out)
 );
 
 //////////////////////////////////////////////////
@@ -196,15 +189,13 @@ id_stage id_stage_0 (
 .rst   					(rst),
 .if_id_IR   			(if_id_IR),
 .if_id_PC				(if_id_PC),
+.id_ex_dest_reg_idx		(id_ex_dest_reg_idx),
+.ex_mem_dest_reg_idx	(ex_mem_dest_reg_idx),
 .mem_wb_dest_reg_idx	(mem_wb_dest_reg_idx),
 .mem_wb_valid_inst    	(mem_wb_valid_inst),
 .mem_wb_reg_wr			(mem_wb_reg_wr), 
 .wb_reg_wr_data_out     (wb_reg_wr_data_out),  	
 .if_id_valid_inst       (if_id_valid_inst),
-.if_forward				(if_forward),
-.ex_alu_result_out		(ex_alu_result_out),
-.ex_mem_alu_result		(ex_mem_alu_result),
-.mem_wb_alu_result		(mem_wb_alu_result),
 
 // Outputs
 .id_reg_wr_out          (id_reg_wr_out),
@@ -306,6 +297,10 @@ ex_stage ex_stage_0 (
 .id_ex_funct3			(id_ex_funct3),
 .uncond_branch			(id_ex_uncond_branch),
 .cond_branch			(id_ex_cond_branch),
+
+.ex_mem_alu_result		(ex_mem_alu_result),
+.mem_wb_alu_result		(mem_wb_alu_result),
+
 // Outputs
 .ex_take_branch_out		(ex_take_branch_out),
 .ex_target_PC_out		(ex_target_PC_out),

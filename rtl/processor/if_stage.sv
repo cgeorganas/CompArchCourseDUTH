@@ -10,55 +10,12 @@ module if_stage (
 	input logic [31:0]	ex_target_PC_out,	// target pc: use if take_branch is TRUE
 	input logic [31:0]	Imem2proc_data,		// Data coming back from instruction-memory
 
-	input logic [4:0]	id_rd,
-	input logic [4:0]	ex_rd,
-	input logic [4:0]	mem_rd,
-
 	output logic [31:0]	proc2Imem_addr,		// Address sent to Instruction memory
 	output logic [31:0]	if_PC_out,			// current PC
 	output logic [31:0]	if_NPC_out,			// PC + 4
 	output logic [31:0]	if_IR_out,			// fetched instruction out
-	output logic		if_valid_inst_out,	// when low, instruction is garbage
-	output logic [3:0]	if_forward
+	output logic		if_valid_inst_out	// when low, instruction is garbage
 );
-
-// RAW data hazard detector
-logic [1:0] rs_valid; // which register fields does the instruction use
-always_comb begin
-	case(Imem2proc_data[6:0])
-		`R_TYPE, `S_TYPE, `B_TYPE				: rs_valid = 2'b11; // uses rs1 and rs2
-		`I_ARITH_TYPE, `I_LD_TYPE, `I_JAL_TYPE	: rs_valid = 2'b01; // uses rs1
-		default									: rs_valid = 2'b00; // uses none
-	endcase
-end
-
-logic [1:0] rs1_match, rs2_match; // where to forward from
-always_comb begin
-	case (Imem2proc_data[19:15]) //rs1
-		5'b00000	: rs1_match = 2'b00;
-		id_rd		: rs1_match = 2'b01;
-		ex_rd		: rs1_match = 2'b10;
-		mem_rd		: rs1_match = 2'b11;
-		default		: rs1_match = 2'b00;
-	endcase
-	case (Imem2proc_data[24:20]) //rs2
-		5'b00000	: rs2_match = 2'b00;
-		id_rd		: rs2_match = 2'b01;
-		ex_rd		: rs2_match = 2'b10;
-		mem_rd		: rs2_match = 2'b11;
-		default		: rs2_match = 2'b00;
-	endcase
-end
-
-always_ff @(posedge clk) begin
-	if (rst) begin
-		if_forward <= 4'b0000;
-	end
-	else begin
-		if_forward[1:0] <= (rs_valid[0] ? rs1_match : 2'b00);
-		if_forward[3:2] <= (rs_valid[1] ? rs2_match : 2'b00);
-	end
-end
 
 logic stall;
 assign stall = 1'b0;

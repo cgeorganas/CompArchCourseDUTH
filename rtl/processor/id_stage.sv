@@ -10,22 +10,19 @@ input logic [31:0] 	if_id_IR,            	// incoming instruction
 input logic [31:0]	if_id_PC,
 input logic	        mem_wb_valid_inst,   	 	//Does the instruction write to rd?
 input logic	        mem_wb_reg_wr,   	 	//Does the instruction write to rd?
+input logic [4:0]	id_ex_dest_reg_idx,
+input logic [4:0]	ex_mem_dest_reg_idx,
 input logic [4:0]	mem_wb_dest_reg_idx, 	//index of rd
 input logic [31:0] 	wb_reg_wr_data_out, 	// Reg write data from WB Stage
 input logic         if_id_valid_inst,
-
-input logic [3:0]	if_forward,
-input logic [31:0]	ex_alu_result_out,
-input logic [31:0]	ex_mem_alu_result,
-input logic [31:0]	mem_wb_alu_result,
 
 output logic [31:0] id_ra_value_out,    	// reg A value
 output logic [31:0] id_rb_value_out,    	// reg B value
 output logic [31:0]	id_immediate_out,		// sign-extended 32-bit immediate
 output logic [31:0] pc_add_opa,
 
-output logic [1:0] 	id_opa_select_out,    	// ALU opa mux select (ALU_OPA_xxx *)
-output logic [1:0] 	id_opb_select_out,    	// ALU opb mux select (ALU_OPB_xxx *)
+output logic [2:0] 	id_opa_select_out,    	// ALU opa mux select (ALU_OPA_xxx *)
+output logic [2:0] 	id_opb_select_out,    	// ALU opb mux select (ALU_OPB_xxx *)
 
 output logic 		id_reg_wr_out,
 output logic [2:0] 	id_funct3_out,
@@ -38,7 +35,7 @@ output logic        uncond_branch,
 output logic       	id_illegal_out,
 output logic       	id_valid_inst_out	  	// is inst a valid instruction to be counted for CPI calculations?
 );
-   
+
 logic dest_reg_select;
 logic [31:0] rb_val;
 
@@ -55,48 +52,56 @@ assign rc_idx=if_id_IR[11:7];  // inst operand C register index
 logic write_en;
 assign write_en=mem_wb_valid_inst & mem_wb_reg_wr;
 
-logic [31:0] regf_rda, regf_rdb;
+regfile regf_0(
+	.clk		(clk),
+	.rst		(rst),
+	.rda_idx	(ra_idx),
+	.rda_out	(id_ra_value_out),
+	.rdb_idx	(rb_idx),
+	.rdb_out	(id_rb_value_out),
+	.wr_en		(write_en),
+	.wr_idx		(mem_wb_dest_reg_idx),
+	.wr_data	(wb_reg_wr_data_out)
+	);
 
-regfile regf_0(.clk		(clk),
-			   .rst		(rst),
-			   .rda_idx	(ra_idx),
-			   .rda_out	(regf_rda), 
-			   .rdb_idx	(rb_idx),
-			   .rdb_out	(regf_rdb), 
-			   .wr_en	(write_en),
-			   .wr_idx	(mem_wb_dest_reg_idx),
-			   .wr_data	(wb_reg_wr_data_out));
-
-always_comb begin
-	case (if_forward[1:0])
-		2'b00:		id_ra_value_out = regf_rda;
-		2'b01:		id_ra_value_out = ex_alu_result_out;
-		2'b10:		id_ra_value_out = ex_mem_alu_result;
-		2'b11:		id_ra_value_out = mem_wb_alu_result;
-		default:	id_ra_value_out = regf_rda;
-	endcase
-	case (if_forward[3:2])
-		2'b00:		id_rb_value_out = regf_rdb;
-		2'b01:		id_rb_value_out = ex_alu_result_out;
-		2'b10:		id_rb_value_out = ex_mem_alu_result;
-		2'b11:		id_rb_value_out = mem_wb_alu_result;
-		default:	id_rb_value_out = regf_rdb;
-	endcase
-end
+logic [1:0] reg_fields;
+logic [2:0] opa_select, opb_select;
 
 // instantiate the instruction inst_decoder
-inst_decoder inst_decoder_0(.inst	        (if_id_IR),
-							.valid_inst_in  (if_id_valid_inst),
-							.opa_select		(id_opa_select_out),
-							.opb_select		(id_opb_select_out),
-							.alu_func		(id_alu_func_out),
-							.dest_reg		(dest_reg_select),
-							.rd_mem			(id_rd_mem_out),
-							.wr_mem			(id_wr_mem_out),
-							.cond_branch	(cond_branch),
-							.uncond_branch	(uncond_branch),
-							.illegal		(id_illegal_out),
-							.valid_inst		(id_valid_inst_out));
+inst_decoder inst_decoder_0(
+	.inst			(if_id_IR),
+	.valid_inst_in	(if_id_valid_inst),
+	.opa_select		(opa_select),
+	.opb_select		(opb_select),
+	.alu_func		(id_alu_func_out),
+	.dest_reg		(dest_reg_select),
+	.rd_mem			(id_rd_mem_out),
+	.wr_mem			(id_wr_mem_out),
+	.cond_branch	(cond_branch),
+	.uncond_branch	(uncond_branch),
+	.illegal		(id_illegal_out),
+	.valid_inst		(id_valid_inst_out),
+	.reg_fields		(reg_fields)
+);
+
+always_comb begin
+	case (ra_idx) //rs1
+		5'b00000				: id_opa_select_out = opa_select;
+		id_ex_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_1;
+		ex_mem_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_2;
+		mem_wb_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_3;
+		default					: id_opa_select_out = opa_select;
+	endcase
+	case (rb_idx) //rs2
+		5'b00000				: id_opb_select_out = opb_select;
+		id_ex_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_1;
+		ex_mem_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_2;
+		mem_wb_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_3;
+		default					: id_opb_select_out = opb_select;
+	endcase
+	if (~reg_fields[0])			id_opa_select_out = opa_select;
+	if (~reg_fields[1])			id_opb_select_out = opb_select;
+end
 
 always_comb begin : write_to_rd
 	case(if_id_IR[6:0])

@@ -9,13 +9,14 @@ input [31:0] 		inst,
 input logic valid_inst_in,  // ignore inst when low, outputs will
 					        // reflect noop (except valid_inst)
 
-output logic [1:0] 	opa_select,
-output logic [1:0] 	opb_select,
+output logic [2:0] 	opa_select,
+output logic [2:0] 	opb_select,
 output logic        dest_reg, // mux selects
 output logic [4:0]  alu_func,
 output logic 		rd_mem,wr_mem, cond_branch, uncond_branch,
 output logic 		illegal,    // non-zero on an illegal instruction
-output logic 		valid_inst  // for counting valid instructions executed
+output logic 		valid_inst,  // for counting valid instructions executed
+output logic [1:0]	reg_fields	//00 for none, 01 for rs1, 11 for both rs1 and rs2
 );
 
 assign valid_inst =valid_inst_in & ~illegal;
@@ -33,12 +34,14 @@ always_comb begin
 	cond_branch = `FALSE;
 	uncond_branch = `FALSE;
 	illegal = `FALSE;
+	reg_fields = 2'b00;
 
 	case (inst[6:0])
 		`R_TYPE: begin
 			opa_select = `ALU_OPA_IS_REGA;
 			opb_select = `ALU_OPB_IS_REGB;
 			dest_reg = `DEST_IS_REGC;
+			reg_fields = 2'b11;
 
 			case({inst[14:12], inst[31:25]})
 				`ADD_INST    : alu_func = `ALU_ADD;   
@@ -67,6 +70,7 @@ always_comb begin
 			opa_select = `ALU_OPA_IS_REGA;
 			opb_select = `ALU_OPB_IS_IMM;
 			dest_reg = `DEST_IS_REGC;
+			reg_fields = 2'b01;
 
 			case(inst[14:12])
 				`ADDI_INST : alu_func = `ALU_ADD;
@@ -91,6 +95,7 @@ always_comb begin
 			opa_select = `ALU_OPA_IS_REGA;
 			opb_select = `ALU_OPB_IS_IMM;
 			dest_reg = `DEST_IS_REGC;
+			reg_fields = 2'b01;
 			rd_mem = `TRUE;
 			alu_func = `ALU_ADD;
 			illegal=(inst[14:12]!=2)?`TRUE:`FALSE;			
@@ -100,6 +105,7 @@ always_comb begin
 			opa_select = `ALU_OPA_IS_REGA;
 			opb_select = `ALU_OPB_IS_IMM;
 			alu_func = `ALU_ADD;
+			reg_fields = 2'b11;
 			
 			case(inst[14:12])
 				`SW_INST:   wr_mem = `TRUE;
@@ -111,6 +117,7 @@ always_comb begin
 			opa_select = `ALU_OPA_IS_PC;
 			opb_select = `ALU_OPB_IS_IMM;
 			cond_branch = `TRUE;
+			reg_fields = 2'b11;
 			
 			case(inst[14:12])
 				3'd2, 3'd3: illegal = `TRUE;
@@ -132,6 +139,7 @@ always_comb begin
 			dest_reg = `DEST_IS_REGC;
 			alu_func = `ALU_ADD;
 			uncond_branch = `TRUE;
+			reg_fields = 2'b01;
 			
 			illegal = (inst[14:12] != 3'h0) ? `TRUE : `FALSE;
 		end //I_JAL_TYPE

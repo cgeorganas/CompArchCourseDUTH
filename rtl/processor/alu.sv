@@ -12,7 +12,7 @@ module alu(
 	input logic [2:0]	funct3,
 
 	output logic [31:0] result,
-	output logic [31:0] br_cond_result
+	output logic		br_cond_result
 );
 
 //Multiplier
