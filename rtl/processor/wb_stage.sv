@@ -16,19 +16,7 @@ module wb_stage(
 	output	logic	[4:0]	WB_rd
 );
 
-always_comb begin
-
-	WB_data	= 32'h0000_0000;
-	WB_rd	= `ZERO_REG;
-
-	if (MEM_WB_vld) begin
-		WB_rd = MEM_WB_rd;
-		case (MEM_WB_wb_sel)
-			`WB_SEL_ALU:	WB_data = MEM_WB_alu_res;
-			`WB_SEL_DOUT:	WB_data = MEM_WB_mem_dout;
-		endcase
-	end
-
-end
+assign WB_data = (MEM_WB_wb_sel==`WB_SEL_ALU) ? MEM_WB_alu_res : MEM_WB_mem_dout;
+assign WB_rd = (MEM_WB_vld) ? MEM_WB_rd : `ZERO_REG;
 
 endmodule

@@ -79,20 +79,20 @@
 `define BGEU_INST				3'h7
 
 //ALU opa input mux selects
-`define ALU_OPA_IS_REGA			3'h0
-`define	ALU_OPA_IS_PC			3'h1
-`define	ALU_OPA_IS_ZR			3'h2
-`define	ALU_OPA_FOWARD_1		3'h3
-`define	ALU_OPA_FOWARD_2		3'h4
-`define	ALU_OPA_FOWARD_3		3'h5
+`define SEL_RS1					3'h0
+`define	SEL_PC					3'h1
+`define	SEL_ZR					3'h2
+`define	SEL_F1					3'h3
+`define	SEL_F2					3'h4
+`define	SEL_F3					3'h5
 
 //ALU opb input mux selects
-`define	ALU_OPB_IS_REGB			3'h0
-`define	ALU_OPB_IS_IMM			3'h1
-`define ALU_OPB_IS_4			3'h2
-`define	ALU_OPB_FOWARD_1		3'h3
-`define	ALU_OPB_FOWARD_2		3'h4
-`define	ALU_OPB_FOWARD_3		3'h5
+`define	SEL_RS2					3'h0
+`define	SEL_IMM					3'h1
+`define SEL_4					3'h2
+`define	SEL_F1					3'h3
+`define	SEL_F2					3'h4
+`define	SEL_F3					3'h5
 
 // Destination register select
 `define DEST_IS_REGC			1'b0
@@ -122,6 +122,7 @@
 `define	BUS_NONE				2'b00
 `define	BUS_LOAD				2'b01
 `define	BUS_STORE				2'b10
+`define	BUS_NA					2'b11
 
 // WB commands control signals
 `define	WB_SEL_NONE				2'b00

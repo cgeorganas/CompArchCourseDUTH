@@ -6,25 +6,37 @@ module id_stage(
 	input	logic			clk,
 	input	logic			rst,
 
-	input	logic	[31:0]	RF_rs1_data,
-	input	logic	[31:0]	RF_rs2_data,
 	input	logic	[31:0]	IF_ID_pc,
 	input	logic	[31:0]	IF_ID_inst,
 	input	logic			IF_ID_vld,
 
+	// input	logic	[4:0]	ID_EX_rd,
+	// input	logic	[4:0]	EX_MEM_rd,
+	// input	logic	[4:0]	MEM_WB_rd,
+	// input	logic	[1:0]	ID_EX_mem_cmd,
+	// input	logic	[1:0]	EX_MEM_mem_cmd,
+	// input	logic	[31:0]	EX_alu_res,
+	// input	logic	[31:0]	MEM_alu_res,
+	// input	logic	[31:0]	MEM_mem_dout,
+	// input	logic	[31:0]	WB_data,
+
 	output	logic	[4:0]	ID_rs1,
 	output	logic	[4:0]	ID_rs2,
-	output	logic	[31:0]	ID_alu_opa,
-	output	logic	[31:0]	ID_alu_opb,
+	output	logic	[31:0]	ID_pc,
+	output	logic	[31:0]	ID_imm,
+	output	logic	[5:0]	ID_alu_sel,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
-	output	logic	[31:0]	ID_mem_din,
 	output	logic	[1:0]	ID_mem_cmd,
 	output	logic	[4:0]	ID_rd
 );
 
 assign ID_rs1 = IF_ID_inst[19:15];
 assign ID_rs2 = IF_ID_inst[24:20];
+assign ID_pc = IF_ID_pc;
+
+logic [2:0] opa_sel, opb_sel;
+assign ID_alu_sel = {opa_sel, opb_sel};
 
 logic [31:0] imm_i, imm_s, imm_b, imm_j, imm_u;
 assign imm_i = {{20{IF_ID_inst[31]}}, IF_ID_inst[31:20]};
@@ -36,27 +48,27 @@ assign imm_u = {IF_ID_inst[31:12], 12'b0};
 always_comb begin
 
 	case (IF_ID_inst[6:0])
-		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE,`S_TYPE:		ID_alu_opa = RF_rs1_data;
-		`I_JAL_TYPE, `B_TYPE, `J_TYPE, `U_AUIPC_TYPE:	ID_alu_opa = IF_ID_pc;
-		default:										ID_alu_opa = 32'h0000_0000;
+		`S_TYPE:										ID_imm = imm_s;
+		`B_TYPE:										ID_imm = imm_b;
+		`J_TYPE:										ID_imm = imm_j;
+		`U_LD_TYPE, `U_AUIPC_TYPE:						ID_imm = imm_u;
+		default:										ID_imm = imm_i;
 	endcase
 
 	case (IF_ID_inst[6:0])
-		`R_TYPE:										ID_alu_opb = RF_rs2_data;
-		`I_ARITH_TYPE, `I_LD_TYPE:						ID_alu_opb = imm_i;
-		`S_TYPE:										ID_alu_opb = imm_s;
-		`B_TYPE:										ID_alu_opb = imm_b;
-		`U_LD_TYPE, `U_AUIPC_TYPE:						ID_alu_opb = imm_u;
-		`J_TYPE, `I_JAL_TYPE:							ID_alu_opb = 32'h0000_0004;
-		default:										ID_alu_opb = 32'h0000_0000;
+		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE,`S_TYPE:		opa_sel = `SEL_RS1;
+		`I_JAL_TYPE, `B_TYPE, `J_TYPE, `U_AUIPC_TYPE:	opa_sel = `SEL_PC;
+		default:										opa_sel = `SEL_ZR;
 	endcase
 
 	case (IF_ID_inst[6:0])
-		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE:				ID_vld = IF_ID_vld;
-		`I_JAL_TYPE, `S_TYPE, `B_TYPE, `J_TYPE:			ID_vld = IF_ID_vld;
-		`U_LD_TYPE, `U_AUIPC_TYPE, `I_BREAK_TYPE:		ID_vld = IF_ID_vld;
-		default:										ID_vld = `FALSE;
+		`R_TYPE:										opb_sel = `SEL_RS2;
+		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
+		`B_TYPE, `U_LD_TYPE, `U_AUIPC_TYPE:				opb_sel = `SEL_IMM;
+		default:										opb_sel = `SEL_4;
 	endcase
+
+	ID_alu_func = `ALU_ADD;
 
 	if (IF_ID_inst[6:0]==`R_TYPE) begin
 		case({IF_ID_inst[14:12], IF_ID_inst[31:25]})
@@ -89,6 +101,13 @@ always_comb begin
 	end
 
 	case (IF_ID_inst[6:0])
+		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE:				ID_vld = IF_ID_vld;
+		`I_JAL_TYPE, `S_TYPE, `B_TYPE, `J_TYPE:			ID_vld = IF_ID_vld;
+		`U_LD_TYPE, `U_AUIPC_TYPE, `I_BREAK_TYPE:		ID_vld = IF_ID_vld;
+		default:										ID_vld = `FALSE;
+	endcase
+
+	case (IF_ID_inst[6:0])
 		`I_LD_TYPE:										ID_mem_cmd = `BUS_LOAD;
 		`S_TYPE:										ID_mem_cmd = `BUS_STORE;
 		default:										ID_mem_cmd = `BUS_NONE;
@@ -100,7 +119,5 @@ always_comb begin
 	endcase
 
 end
-
-assign ID_mem_din = (ID_mem_cmd==`BUS_STORE) ? RF_rs2_data : 32'h0000_0000;
 
 endmodule

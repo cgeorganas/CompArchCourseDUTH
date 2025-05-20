@@ -41,60 +41,62 @@ logic			IF_ID_vld;
 logic	[4:0]	ID_rs1;
 logic	[4:0]	ID_rs2;
 
-logic	[31:0]	ID_alu_opa;
-logic	[31:0]	ID_alu_opb;
+logic	[31:0]	ID_pc;
+logic	[31:0]	ID_imm;
+logic	[5:0]	ID_alu_sel;
 logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
-logic	[31:0]	ID_mem_din;
 logic	[1:0]	ID_mem_cmd;
 logic	[4:0]	ID_rd;
 
 
 
 // Outputs from ID/EX pipeline register
-logic	[31:0]	ID_EX_alu_opa;
-logic	[31:0]	ID_EX_alu_opb;
+logic	[31:0]	ID_EX_rs1_data;
+logic	[31:0]	ID_EX_rs2_data;
+logic	[31:0]	ID_EX_pc;
+logic	[31:0]	ID_EX_imm;
+logic	[5:0]	ID_EX_alu_sel;
 logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
-logic	[31:0]	ID_EX_mem_din;
 logic	[1:0]	ID_EX_mem_cmd;
 logic	[4:0]	ID_EX_rd;
 
 
 
 // Outputs from EX stage
+logic	[31:0]	EX_mem_din;
 logic	[31:0]	EX_alu_res;
 logic			EX_vld;
 
 
 
 // Outputs from EX/MEM pipeline register
+logic	[31:0]	EX_MEM_mem_din;
 logic	[31:0]	EX_MEM_alu_res;
 logic			EX_MEM_vld;
 
-logic	[31:0]	EX_MEM_mem_din;
 logic	[1:0]	EX_MEM_mem_cmd;
 logic	[4:0]	EX_MEM_rd;
 
 
 
 // Outputs from MEM stage
-// logic	[31:0]	MEM_mem_addr;
 // logic	[1:0]	MEM_mem_cmd;
+// logic	[31:0]	MEM_mem_addr;
 // logic	[31:0]	MEM_mem_din;
 
 logic	[31:0]	MEM_alu_res;
-logic	[31:0]	MEM_mem_dout;
 logic	[1:0]	MEM_wb_sel;
 logic			MEM_vld;
 
 
 
 // Outputs from MEM/WB pipeline register
-logic	[31:0]	MEM_WB_alu_res;
 logic	[31:0]	MEM_WB_mem_dout;
+logic	[31:0]	MEM_WB_alu_res;
 logic	[1:0]	MEM_WB_wb_sel;
 logic			MEM_WB_vld;
 
@@ -158,19 +160,27 @@ id_stage id_stage_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.RF_rs1_data		(RF_rs1_data),
-	.RF_rs2_data		(RF_rs2_data),
 	.IF_ID_pc			(IF_ID_pc),
 	.IF_ID_inst			(IF_ID_inst),
 	.IF_ID_vld			(IF_ID_vld),
 
+	// .ID_EX_rd			(ID_EX_rd),
+	// .EX_MEM_rd			(EX_MEM_rd),
+	// .MEM_WB_rd			(MEM_WB_rd),
+	// .ID_EX_mem_cmd		(ID_EX_mem_cmd),
+	// .EX_MEM_mem_cmd		(EX_MEM_mem_cmd),
+	// .EX_alu_res			(EX_alu_res),
+	// .MEM_alu_res		(MEM_alu_res),
+	// .MEM_mem_dout		(MEM_mem_dout),
+	// .WB_data			(WB_data),
+
 	.ID_rs1				(ID_rs1),
 	.ID_rs2				(ID_rs2),
-	.ID_alu_opa			(ID_alu_opa),
-	.ID_alu_opb			(ID_alu_opb),
+	.ID_pc				(ID_pc),
+	.ID_imm				(ID_imm),
+	.ID_alu_sel			(ID_alu_sel),
 	.ID_alu_func		(ID_alu_func),
 	.ID_vld				(ID_vld),
-	.ID_mem_din			(ID_mem_din),
 	.ID_mem_cmd			(ID_mem_cmd),
 	.ID_rd				(ID_rd)
 );
@@ -180,20 +190,24 @@ id_stage id_stage_0(
 // ID/EX pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		ID_EX_alu_opa	<= 32'h0;
-		ID_EX_alu_opb	<= 32'h0;
+		ID_EX_rs1_data	<= 32'h0;
+		ID_EX_rs2_data	<= 32'h0;
+		ID_EX_pc		<= 32'h0;
+		ID_EX_imm		<= 32'h0;
+		ID_EX_alu_sel	<= 6'h0;
 		ID_EX_alu_func	<= `ALU_ADD;
 		ID_EX_vld		<= `FALSE;
-		ID_EX_mem_din	<= 32'h0;
 		ID_EX_mem_cmd	<= `BUS_NONE;
 		ID_EX_rd		<= `ZERO_REG;
 	end
 	else if (ST_id_ex_en) begin
-		ID_EX_alu_opa	<= ID_alu_opa;
-		ID_EX_alu_opb	<= ID_alu_opb;
+		ID_EX_rs1_data	<= RF_rs1_data;
+		ID_EX_rs2_data	<= RF_rs2_data;
+		ID_EX_pc		<= ID_pc;
+		ID_EX_imm		<= ID_imm;
+		ID_EX_alu_sel	<= ID_alu_sel;
 		ID_EX_alu_func	<= ID_alu_func;
 		ID_EX_vld		<= ID_vld;
-		ID_EX_mem_din	<= ID_mem_din;
 		ID_EX_mem_cmd	<= ID_mem_cmd;
 		ID_EX_rd		<= ID_rd;
 	end
@@ -206,11 +220,15 @@ ex_stage ex_stage_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.ID_EX_alu_opa		(ID_EX_alu_opa),
-	.ID_EX_alu_opb		(ID_EX_alu_opb),
+	.ID_EX_rs1_data		(ID_EX_rs1_data),
+	.ID_EX_rs2_data		(ID_EX_rs2_data),
+	.ID_EX_pc			(ID_EX_pc),
+	.ID_EX_imm			(ID_EX_imm),
+	.ID_EX_alu_sel		(ID_EX_alu_sel),
 	.ID_EX_alu_func		(ID_EX_alu_func),
 	.ID_EX_vld			(ID_EX_vld),
 
+	.EX_mem_din			(EX_mem_din),
 	.EX_alu_res			(EX_alu_res),
 	.EX_vld				(EX_vld)
 );
@@ -220,16 +238,16 @@ ex_stage ex_stage_0(
 // EX/MEM pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
+		EX_MEM_mem_din	<= 32'h0;
 		EX_MEM_alu_res	<= 32'h0;
 		EX_MEM_vld		<= `FALSE;
-		EX_MEM_mem_din	<= 32'h0;
 		EX_MEM_mem_cmd	<= `BUS_NONE;
 		EX_MEM_rd		<= `ZERO_REG;
 	end
 	else if (ST_ex_mem_en) begin
+		EX_MEM_mem_din	<= EX_mem_din;
 		EX_MEM_alu_res	<= EX_alu_res;
 		EX_MEM_vld		<= EX_vld;
-		EX_MEM_mem_din	<= ID_EX_mem_din;
 		EX_MEM_mem_cmd	<= ID_EX_mem_cmd;
 		EX_MEM_rd		<= ID_EX_rd;
 	end
@@ -242,17 +260,16 @@ mem_stage mem_stage_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.DM_mem_dout		(DM_mem_dout),
+	.EX_MEM_mem_din		(EX_MEM_mem_din),
 	.EX_MEM_alu_res		(EX_MEM_alu_res),
 	.EX_MEM_vld			(EX_MEM_vld),
-	.EX_MEM_mem_din		(EX_MEM_mem_din),
 	.EX_MEM_mem_cmd		(EX_MEM_mem_cmd),
 
-	.MEM_mem_addr		(MEM_mem_addr),
 	.MEM_mem_cmd		(MEM_mem_cmd),
+	.MEM_mem_addr		(MEM_mem_addr),
 	.MEM_mem_din		(MEM_mem_din),
+
 	.MEM_alu_res		(MEM_alu_res),
-	.MEM_mem_dout		(MEM_mem_dout),
 	.MEM_wb_sel			(MEM_wb_sel),
 	.MEM_vld			(MEM_vld)
 );
@@ -262,15 +279,15 @@ mem_stage mem_stage_0(
 // MEM/WB pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		MEM_WB_alu_res	<= 32'h0;
 		MEM_WB_mem_dout	<= 32'h0;
+		MEM_WB_alu_res	<= 32'h0;
 		MEM_WB_wb_sel	<= `WB_SEL_NONE;
 		MEM_WB_vld		<= `FALSE;
 		MEM_WB_rd		<= `ZERO_REG;
 	end
 	else if (ST_mem_wb_en) begin
+		MEM_WB_mem_dout	<= DM_mem_dout;
 		MEM_WB_alu_res	<= MEM_alu_res;
-		MEM_WB_mem_dout	<= MEM_mem_dout;
 		MEM_WB_wb_sel	<= MEM_wb_sel;
 		MEM_WB_vld		<= MEM_vld;
 		MEM_WB_rd		<= EX_MEM_rd;
