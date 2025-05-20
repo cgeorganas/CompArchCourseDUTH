@@ -6,6 +6,7 @@
 ../processor/mem_stage.sv
 ../processor/wb_stage.sv
 ../processor/register_file.sv
+../processor/stall.sv
 ../processor/processor.sv
 
 memory.sv

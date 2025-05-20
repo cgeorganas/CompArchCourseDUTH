@@ -75,7 +75,7 @@ always_comb begin
 	end
 
 	if (IF_ID_inst[6:0]==`I_ARITH_TYPE) begin
-		case({IF_ID_inst[14:12], IF_ID_inst[31:25]})
+		case(IF_ID_inst[14:12])
 			`ADDI_INST:									ID_alu_func = `ALU_ADD;
 			`XORI_INST:									ID_alu_func = `ALU_XOR;
 			`ORI_INST:									ID_alu_func = `ALU_OR;

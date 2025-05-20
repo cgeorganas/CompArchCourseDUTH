@@ -114,6 +114,14 @@ logic	[31:0]	RF_rs2_data;
 
 
 
+// Outputs from stalling module
+logic			ST_if_id_en;
+logic			ST_id_ex_en;
+logic			ST_ex_mem_en;
+logic			ST_mem_wb_en;
+
+
+
 // IF stage
 if_stage if_stage_0(
 	.clk				(clk),
@@ -136,7 +144,7 @@ always_ff @(posedge clk or posedge rst) begin
 		IF_ID_inst		<= `NOOP_INST;
 		IF_ID_vld		<= `FALSE;
 	end
-	else if (`TRUE) begin
+	else if (ST_if_id_en) begin
 		IF_ID_pc		<= IF_pc;
 		IF_ID_inst		<= IF_inst;
 		IF_ID_vld		<= IF_vld;
@@ -180,7 +188,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_mem_cmd	<= `BUS_NONE;
 		ID_EX_rd		<= `ZERO_REG;
 	end
-	else if (`TRUE) begin
+	else if (ST_id_ex_en) begin
 		ID_EX_alu_opa	<= ID_alu_opa;
 		ID_EX_alu_opb	<= ID_alu_opb;
 		ID_EX_alu_func	<= ID_alu_func;
@@ -218,7 +226,7 @@ always_ff @(posedge clk or posedge rst) begin
 		EX_MEM_mem_cmd	<= `BUS_NONE;
 		EX_MEM_rd		<= `ZERO_REG;
 	end
-	else if (`TRUE) begin
+	else if (ST_ex_mem_en) begin
 		EX_MEM_alu_res	<= EX_alu_res;
 		EX_MEM_vld		<= EX_vld;
 		EX_MEM_mem_din	<= ID_EX_mem_din;
@@ -260,7 +268,7 @@ always_ff @(posedge clk or posedge rst) begin
 		MEM_WB_vld		<= `FALSE;
 		MEM_WB_rd		<= `ZERO_REG;
 	end
-	else if (`TRUE) begin
+	else if (ST_mem_wb_en) begin
 		MEM_WB_alu_res	<= MEM_alu_res;
 		MEM_WB_mem_dout	<= MEM_mem_dout;
 		MEM_WB_wb_sel	<= MEM_wb_sel;
@@ -289,7 +297,7 @@ wb_stage wb_stage_0(
 
 
 // Register file
-register_file	register_file_0(
+register_file register_file_0(
 	.clk				(clk),
 	.rst				(rst),
 
@@ -300,6 +308,19 @@ register_file	register_file_0(
 
 	.RF_rs1_data		(RF_rs1_data),
 	.RF_rs2_data		(RF_rs2_data)
+);
+
+
+
+// Stalling module
+stall stall_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.ST_if_id_en		(ST_if_id_en),
+	.ST_id_ex_en		(ST_id_ex_en),
+	.ST_ex_mem_en		(ST_ex_mem_en),
+	.ST_mem_wb_en		(ST_mem_wb_en)
 );
 
 endmodule
