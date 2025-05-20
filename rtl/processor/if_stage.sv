@@ -20,6 +20,6 @@ always_comb begin
 end
 
 assign IF_inst = IM_inst;
-assign IF_inst_valid = `TRUE;
+assign IF_vld = `TRUE;
 
 endmodule
