@@ -16,4 +16,7 @@ module wb_stage(
 	output	logic	[4:0]	WB_rd
 );
 
+assign WB_data = MEM_WB_alu_res;
+assign WB_rd = MEM_WB_rd;
+
 endmodule

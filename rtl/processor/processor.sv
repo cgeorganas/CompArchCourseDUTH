@@ -132,7 +132,7 @@ if_stage if_stage_0(
 // IF/ID pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		IF_ID_pc		<= 32'h0;
+		IF_ID_pc		<= 32'hFFFF_FFFC;
 		IF_ID_inst		<= `NOOP_INST;
 		IF_ID_vld		<= `FALSE;
 	end

@@ -23,4 +23,16 @@ module id_stage(
 	output	logic	[4:0]	ID_rd
 );
 
+assign ID_rs1 = IF_ID_inst[19:15];
+assign ID_rs2 = IF_ID_inst[24:20];
+
+assign ID_alu_opa = ID_rs1;
+assign ID_alu_opb = ID_rs2;
+assign ID_alu_func = `ALU_ADD;
+assign ID_vld = `TRUE;
+
+assign ID_mem_din = 32'h0;
+assign ID_mem_cmd	= `BUS_NONE;
+assign ID_rd = IF_ID_inst[11:7];
+
 endmodule

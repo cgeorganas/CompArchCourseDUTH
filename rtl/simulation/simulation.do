@@ -12,7 +12,7 @@ vlog -f files_rtl.f
 vsim processor_tb
 log -r /*
 
-# add wave -position end  sim:/processor_tb/proc_module/id_stage_0/regf_0/registers
+add wave -position end  sim:/processor_tb/processor_0/register_file_0/registers
 
 run -all
 

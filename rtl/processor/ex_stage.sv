@@ -15,4 +15,7 @@ module ex_stage(
 	output	logic			EX_vld
 );
 
+assign EX_alu_res = ID_EX_alu_opa + ID_EX_alu_opb;
+assign EX_vld = `TRUE;
+
 endmodule

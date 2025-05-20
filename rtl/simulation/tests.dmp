@@ -5,30 +5,10 @@ tests.o:     file format elf32-littleriscv
 Disassembly of section .text:
 
 00000000 <.text>:
-   0:	00100513          	li	a0,1
-   4:	00050593          	mv	a1,a0
-   8:	00200513          	li	a0,2
-   c:	00000033          	add	zero,zero,zero
-  10:	00050593          	mv	a1,a0
-  14:	00300513          	li	a0,3
-  18:	00000033          	add	zero,zero,zero
-  1c:	00000033          	add	zero,zero,zero
-  20:	00050593          	mv	a1,a0
-  24:	00400513          	li	a0,4
-  28:	00000033          	add	zero,zero,zero
-  2c:	00000033          	add	zero,zero,zero
-  30:	00000033          	add	zero,zero,zero
-  34:	00050593          	mv	a1,a0
-  38:	00500513          	li	a0,5
-  3c:	00000033          	add	zero,zero,zero
-  40:	00000033          	add	zero,zero,zero
-  44:	00000033          	add	zero,zero,zero
-  48:	00000033          	add	zero,zero,zero
-  4c:	00050593          	mv	a1,a0
-  50:	00600513          	li	a0,6
-  54:	00000033          	add	zero,zero,zero
-  58:	00000033          	add	zero,zero,zero
-  5c:	00000033          	add	zero,zero,zero
-  60:	00000033          	add	zero,zero,zero
-  64:	00000033          	add	zero,zero,zero
-  68:	00050593          	mv	a1,a0
+   0:	00100593          	li	a1,1
+   4:	00200613          	li	a2,2
+   8:	00300693          	li	a3,3
+   c:	00400713          	li	a4,4
+  10:	00500793          	li	a5,5
+  14:	00600813          	li	a6,6
+  18:	00700893          	li	a7,7

@@ -21,4 +21,13 @@ module mem_stage(
 	output	logic			MEM_vld
 );
 
+assign MEM_mem_addr = 32'h0;
+assign MEM_mem_cmd = `BUS_NONE;
+assign MEM_mem_din = 32'h0;
+
+assign MEM_alu_res = EX_MEM_alu_res;
+assign MEM_mem_dout = 32'h0;
+assign MEM_wb_sel = `WB_SEL_ALU;
+assign MEM_vld = `TRUE;
+
 endmodule

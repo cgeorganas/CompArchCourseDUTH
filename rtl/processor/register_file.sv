@@ -15,4 +15,20 @@ module register_file(
 	output	logic	[31:0]	RF_rs2_data
 );
 
+logic [31:0] registers [0:31];
+
+assign RF_rs1_data = registers[ID_rs1];
+assign RF_rs2_data = registers[ID_rs2];
+
+always_ff @(posedge clk or posedge rst) begin
+	if (rst) begin
+		for(int i=0;i<32;i++) begin
+			registers[i]<=32'h0;
+		end
+	end
+	else if (WB_rd!=`ZERO_REG) begin
+		registers[WB_rd] <= WB_data;
+	end
+end
+
 endmodule
