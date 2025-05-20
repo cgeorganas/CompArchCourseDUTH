@@ -3,434 +3,303 @@
 `endif
 
 module processor(
-    input logic 		clk,                  	// System clk
-    input logic 		rst,                  	// System rst
-    
-	output logic [4:0]  pipeline_commit_wr_idx,
-    output logic [31:0] pipeline_commit_wr_data,
-    output logic [31:0] pipeline_commit_NPC,
-	output logic        pipeline_commit_wr,
-	
-	input  logic[ 31:0] instruction,
-	output logic [31:0] pc_addr,
-	output logic [1:0]  im_command,
+	input	logic			clk,
+	input	logic			rst,
 
-	input logic [31:0] 	mem2proc_data,
-	output logic [31:0] proc2Dmem_addr,
-	output logic [1:0] 	proc2Dmem_command,
-	output logic [31:0] proc2mem_data,
-	
-	// Outputs from IF-Stage 
-	output logic [31:0] if_PC_out,
-	output logic [31:0] if_NPC_out,
-	output logic [31:0] if_IR_out,
-	output logic        if_valid_inst_out,
+	//Outputs from IM
+	input	logic	[31:0]	IM_inst,
 
-	// Outputs from IF/ID Pipeline Register
-	output logic [31:0] if_id_PC,
-	output logic [31:0] if_id_NPC,
-	output logic [31:0] if_id_IR,
-	output logic        if_id_valid_inst,
+	//Outputs from IM
+	input	logic	[31:0]	DM_mem_dout,
 
-	// Outputs from ID/EX Pipeline Register
-	output logic [31:0] id_ex_PC,
-	output logic [31:0] id_ex_NPC,
-	output logic [31:0] id_ex_IR,
-	output logic   		id_ex_valid_inst,
+	// Outputs from IF stage
+	output	logic	[31:0]	IF_pc,
+
+	// Outputs from MEM stage
+	output	logic	[31:0]	MEM_mem_addr,
+	output	logic	[1:0]	MEM_mem_cmd,
+	output	logic	[31:0]	MEM_mem_din
+);
 
 
-	// Outputs from EX/MEM Pipeline Register
-	output logic [31:0] ex_mem_NPC,
-	output logic [31:0] ex_mem_IR,
-	output logic   		ex_mem_valid_inst,
+
+// Outputs from IF stage
+// logic	[31:0]	IF_pc;
+logic	[31:0]	IF_inst;
+logic			IF_vld;
 
 
-	// Outputs from MEM/WB Pipeline Register
-	output logic [31:0] mem_wb_NPC,
-	output logic [31:0] mem_wb_IR,
-	output logic   		mem_wb_valid_inst);
 
-// Pipeline register enables
-logic 			if_id_enable, id_ex_enable, ex_mem_enable, mem_wb_enable;
+// Outputs from IF/ID pipeline register
+logic	[31:0]	IF_ID_pc;
+logic	[31:0]	IF_ID_inst;
+logic			IF_ID_vld;
+
+
 
 // Outputs from ID stage
-logic           id_reg_wr_out;
-logic [2:0]		id_funct3_out;
-logic [31:0]   	id_rega_out;
-logic [31:0]   	id_regb_out;
-logic [31:0]	id_immediate_out;
-logic [2:0] 	id_opa_select_out;
-logic [2:0] 	id_opb_select_out;
-logic [4:0]   	id_dest_reg_idx_out;
-logic [4:0]     id_alu_func_out;
-logic         	id_rd_mem_out;
-logic           id_wr_mem_out;
-logic         	id_illegal_out;
-logic         	id_valid_inst_out;
-logic 			id_uncond_branch;
-logic 			id_cond_branch;
-logic [31:0]    id_pc_add_opa;
+logic	[4:0]	ID_rs1;
+logic	[4:0]	ID_rs2;
 
-// Outputs from ID/EX Pipeline Register
-logic 			id_ex_reg_wr;
-logic [2:0]		id_ex_funct3;
-logic [31:0]   	id_ex_rega;
-logic [31:0]   	id_ex_regb;
-logic [31:0] 	id_ex_imm;
-logic [2:0]		id_ex_opa_select;
-logic [2:0]		id_ex_opb_select;
-logic [4:0]   	id_ex_dest_reg_idx;
-logic [4:0]     id_ex_alu_func;
-logic           id_ex_rd_mem;
-logic           id_ex_wr_mem;
-logic           id_ex_illegal;
-logic 			id_ex_uncond_branch;
-logic 			id_ex_cond_branch;
-logic [31:0]    id_ex_pc_add_opa;
+logic	[31:0]	ID_alu_opa;
+logic	[31:0]	ID_alu_opb;
+logic	[4:0]	ID_alu_func;
+logic			ID_vld;
 
-// Outputs from EX-Stage
-logic [31:0] 	ex_target_PC_out;
-logic 			ex_take_branch_out;
-logic [31:0] 	ex_alu_result_out;
-
-// Outputs from EX/MEM Pipeline Register
-logic [2:0]		ex_mem_funct3;
-logic [4:0]		ex_mem_dest_reg_idx;
-logic      		ex_mem_rd_mem;
-logic         	ex_mem_wr_mem;
-logic			ex_mem_reg_wr;
-logic      		ex_mem_illegal;
-logic [31:0]	ex_mem_regb;
-logic [31:0]	ex_mem_alu_result;
-logic 			ex_mem_take_branch;
-logic [31:0] 	ex_mem_target_PC;
+logic	[31:0]	ID_mem_din;
+logic	[1:0]	ID_mem_cmd;
+logic	[4:0]	ID_rd;
 
 
-// Outputs from MEM-Stage
-logic [31:0] 	mem_result_out;
 
-// Outputs from MEM/WB Pipeline Register
-logic [2:0]		mem_wb_funct3;
-logic       	mem_wb_illegal;
-logic       	mem_wb_reg_wr;
-logic [4:0]	 	mem_wb_dest_reg_idx;
-logic 			mem_wb_rd_mem;
-logic [31:0] 	mem_wb_mem_result;
-logic [31:0] 	mem_wb_alu_result;
+// Outputs from ID/EX pipeline register
+logic	[31:0]	ID_EX_alu_opa;
+logic	[31:0]	ID_EX_alu_opb;
+logic	[4:0]	ID_EX_alu_func;
+logic			ID_EX_vld;
 
-
-// Output from WB-Stage  (this loop back to the register file in ID and to the EX stage)
-logic [31:0] 	wb_reg_wr_data_out;
-
-//Output Memory
+logic	[31:0]	ID_EX_mem_din;
+logic	[1:0]	ID_EX_mem_cmd;
+logic	[4:0]	ID_EX_rd;
 
 
-assign im_command=`BUS_LOAD;
 
-assign pipeline_commit_wr_idx 	= mem_wb_dest_reg_idx;
-assign pipeline_commit_wr_data 	= wb_reg_wr_data_out;
-assign pipeline_commit_NPC 		= if_NPC_out;
-assign pipeline_commit_wr 		= mem_wb_reg_wr;
+// Outputs from EX stage
+logic	[31:0]	EX_alu_res;
+logic			EX_vld;
 
 
-//////////////////////////////////////////////////
-//                                              //
-//                  IF-Stage                    //
-//                                              //
-//////////////////////////////////////////////////
-if_stage if_stage_0 (
-// Inputs
-.clk 				(clk),
-.rst 				(rst),
-.mem_wb_valid_inst	(mem_wb_valid_inst),
-.ex_take_branch_out	(ex_mem_take_branch),
-.ex_target_PC_out	(ex_mem_target_PC),
-.Imem2proc_data		(instruction),
 
-// Outputs
-.if_NPC_out			(if_NPC_out),
-.if_PC_out			(if_PC_out), 
-.if_IR_out			(if_IR_out),
-.proc2Imem_addr		(pc_addr),
-.if_valid_inst_out  (if_valid_inst_out)
+// Outputs from EX/MEM pipeline register
+logic	[31:0]	EX_MEM_alu_res;
+logic			EX_MEM_vld;
+
+logic	[31:0]	EX_MEM_mem_din;
+logic	[1:0]	EX_MEM_mem_cmd;
+logic	[4:0]	EX_MEM_rd;
+
+
+
+// Outputs from MEM stage
+// logic	[31:0]	MEM_mem_addr;
+// logic	[1:0]	MEM_mem_cmd;
+// logic	[31:0]	MEM_mem_din;
+
+logic	[31:0]	MEM_alu_res;
+logic	[31:0]	MEM_mem_dout;
+logic	[1:0]	MEM_wb_sel;
+logic			MEM_vld;
+
+
+
+// Outputs from MEM/WB pipeline register
+logic	[31:0]	MEM_WB_alu_res;
+logic	[31:0]	MEM_WB_mem_dout;
+logic	[1:0]	MEM_WB_wb_sel;
+logic			MEM_WB_vld;
+
+logic	[4:0]	MEM_WB_rd;
+
+
+
+// Outputs from WB stage
+logic	[31:0]	WB_data;
+logic	[4:0]	WB_rd;
+
+
+
+// Outputs from RF
+logic	[31:0]	RF_rs1_data;
+logic	[31:0]	RF_rs2_data;
+
+
+
+// IF stage
+if_stage if_stage_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.IF_ID_pc			(IF_ID_pc),
+	.IM_inst			(IM_inst),
+
+	.IF_pc				(IF_pc),
+	.IF_inst			(IF_inst),
+	.IF_vld				(IF_vld)
 );
 
-//////////////////////////////////////////////////
-//                                              //
-//            IF/ID Pipeline Register           //
-//                                              //
-//////////////////////////////////////////////////
-assign if_id_enable = 1;
 
-always_ff @(posedge clk or posedge rst) begin
-	if(rst) begin
-		if_id_PC         <=  0;
-		if_id_IR         <=  `NOOP_INST;
-		if_id_NPC        <=  0;
-        if_id_valid_inst <=  0;
-    end 
-    else if (if_id_enable) begin
-		if_id_PC         <=  if_PC_out;
-		if_id_NPC        <=  if_NPC_out;
-		if_id_IR         <=  if_IR_out;
-        if_id_valid_inst <= if_valid_inst_out;
-    end 
-end 
 
-   
-//////////////////////////////////////////////////
-//                                              //
-//                  ID-Stage                    //
-//                                              //
-//////////////////////////////////////////////////
-id_stage id_stage_0 (
-// Inputs
-.clk     				(clk),
-.rst   					(rst),
-.if_id_IR   			(if_id_IR),
-.if_id_PC				(if_id_PC),
-.id_ex_dest_reg_idx		(id_ex_dest_reg_idx),
-.ex_mem_dest_reg_idx	(ex_mem_dest_reg_idx),
-.mem_wb_dest_reg_idx	(mem_wb_dest_reg_idx),
-.mem_wb_valid_inst    	(mem_wb_valid_inst),
-.mem_wb_reg_wr			(mem_wb_reg_wr), 
-.wb_reg_wr_data_out     (wb_reg_wr_data_out),  	
-.if_id_valid_inst       (if_id_valid_inst),
-
-// Outputs
-.id_reg_wr_out          (id_reg_wr_out),
-.id_funct3_out			(id_funct3_out),
-.id_ra_value_out		(id_rega_out),
-.id_rb_value_out		(id_regb_out),
-.pc_add_opa				(id_pc_add_opa),
-.id_immediate_out		(id_immediate_out),
-.id_opa_select_out		(id_opa_select_out),
-.id_opb_select_out		(id_opb_select_out),
-.id_dest_reg_idx_out	(id_dest_reg_idx_out),
-.id_alu_func_out		(id_alu_func_out),
-.id_rd_mem_out			(id_rd_mem_out),
-.id_wr_mem_out			(id_wr_mem_out),
-.cond_branch			(id_cond_branch),
-.uncond_branch			(id_uncond_branch),
-.id_illegal_out			(id_illegal_out),
-.id_valid_inst_out		(id_valid_inst_out)
-);
-
-//////////////////////////////////////////////////
-//                                              //
-//            ID/EX Pipeline Register           //
-//                                              //
-//////////////////////////////////////////////////
-assign id_ex_enable =1; // disabled when HzDU initiates a stall
-// synopsys sync_set_rst "rst"
-always_ff @(posedge clk or posedge rst) begin
-	if (rst) begin //sys_rst
-		//Control
-		id_ex_funct3		<=  0;
-		id_ex_opa_select    <=  `ALU_OPA_IS_REGA;
-		id_ex_opb_select    <=  `ALU_OPB_IS_REGB;
-		id_ex_alu_func      <=  `ALU_ADD;
-		id_ex_rd_mem        <=  0;
-		id_ex_wr_mem        <=  0;
-		id_ex_illegal       <=  0;
-		id_ex_valid_inst    <=  `FALSE;
-        id_ex_reg_wr        <=  `FALSE;
-		
-		//Data
-		id_ex_PC            <=  0;
-		id_ex_IR            <=  `NOOP_INST;
-		id_ex_rega          <=  0;
-		id_ex_regb          <=  0;
-		id_ex_imm			<=  0;
-		id_ex_dest_reg_idx  <=  `ZERO_REG;
-		id_ex_pc_add_opa	<=  0;
-		id_ex_uncond_branch <=  0;
-		id_ex_cond_branch	<=  0;
-		
-		//Debug
-		id_ex_NPC           <=  0;
-    end else begin 
-		if (id_ex_enable) begin
-			id_ex_funct3		<=  id_funct3_out;
-			id_ex_opa_select    <=  id_opa_select_out;
-			id_ex_opb_select    <=  id_opb_select_out;
-			id_ex_alu_func      <=  id_alu_func_out;
-			id_ex_rd_mem        <=  id_rd_mem_out;
-			id_ex_wr_mem        <=  id_wr_mem_out;
-			id_ex_illegal       <=  id_illegal_out;
-			id_ex_valid_inst    <=  id_valid_inst_out;
-            id_ex_reg_wr        <=  id_reg_wr_out;
-			
-			id_ex_PC            <=  if_id_PC;
-			id_ex_IR            <=  if_id_IR;
-			id_ex_rega          <=  id_rega_out;
-			id_ex_regb          <=  id_regb_out;
-			id_ex_imm			<=  id_immediate_out;
-			id_ex_dest_reg_idx  <=  id_dest_reg_idx_out;
-			
-			id_ex_NPC           <=  if_id_NPC;
-			id_ex_pc_add_opa	<=  id_pc_add_opa;
-			id_ex_uncond_branch <=  id_uncond_branch;
-			id_ex_cond_branch	<=  id_cond_branch;
-		end // if
-    end // else: !if(rst)
-end // always
-
-//////////////////////////////////////////////////
-//                                              //
-//                  EX-Stage                    //
-//                                              //
-//////////////////////////////////////////////////
-ex_stage ex_stage_0 (
-// Inputs
-.clk					(clk),
-.rst					(rst),
-.id_ex_PC				(id_ex_PC), 
-.id_ex_imm				(id_ex_imm),
-.id_ex_rega				(id_ex_rega),
-.id_ex_regb				(id_ex_regb),
-.id_ex_opa_select		(id_ex_opa_select),
-.id_ex_opb_select		(id_ex_opb_select),
-.id_ex_alu_func			(id_ex_alu_func),
-.id_ex_valid_inst		(id_ex_valid_inst),
-.pc_add_opa				(id_ex_pc_add_opa),
-.id_ex_funct3			(id_ex_funct3),
-.uncond_branch			(id_ex_uncond_branch),
-.cond_branch			(id_ex_cond_branch),
-
-.ex_mem_alu_result		(ex_mem_alu_result),
-.mem_wb_alu_result		(mem_wb_alu_result),
-
-// Outputs
-.ex_take_branch_out		(ex_take_branch_out),
-.ex_target_PC_out		(ex_target_PC_out),
-.ex_alu_result_out		(ex_alu_result_out)
-);
-
-//////////////////////////////////////////////////
-//                                              //
-//           EX/MEM Pipeline Register           //
-//                                              //
-//////////////////////////////////////////////////
-assign ex_mem_enable = 1; // always enabled
-// synopsys sync_set_rst "rst"
+// IF/ID pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		//Control
-		ex_mem_funct3		<=  0;
-		ex_mem_rd_mem       <=  0;
-		ex_mem_wr_mem       <=  0;
-		ex_mem_illegal      <=  0;
-		ex_mem_valid_inst   <=  `FALSE;
-		ex_mem_reg_wr       <=  `FALSE;
-		//Data
-		ex_mem_IR           <=  `NOOP_INST;
-		ex_mem_dest_reg_idx <=  `ZERO_REG;
-		ex_mem_regb         <=  0;
-		ex_mem_alu_result   <=  0;
-		ex_mem_take_branch	<=  0;
-		ex_mem_target_PC	<=  0;		
-		//Debug
-		ex_mem_NPC			<=  0;
-	end else begin
-		if(ex_mem_enable) begin
-			ex_mem_funct3		<=  id_ex_funct3;
-			ex_mem_rd_mem       <=  id_ex_rd_mem;
-			ex_mem_wr_mem       <=  id_ex_wr_mem;
-			ex_mem_illegal      <=  id_ex_illegal;
-			ex_mem_valid_inst   <=  id_ex_valid_inst;
-		    ex_mem_reg_wr       <=  id_ex_reg_wr;
-		
-			ex_mem_IR           <=  id_ex_IR;
-			ex_mem_dest_reg_idx <=  id_ex_dest_reg_idx;
-			ex_mem_regb         <=  id_ex_regb;		
-			ex_mem_alu_result   <=  ex_alu_result_out;
-			ex_mem_take_branch  <=	ex_take_branch_out;
-			ex_mem_target_PC	<=  ex_target_PC_out;			
-			ex_mem_NPC			<=  id_ex_NPC;
-		end // if
-	end // else: !if(rst)
-end // always
+		IF_ID_pc		<= 32'h0;
+		IF_ID_inst		<= `NOOP_INST;
+		IF_ID_vld		<= `FALSE;
+	end
+	else if (`TRUE) begin
+		IF_ID_pc		<= IF_pc;
+		IF_ID_inst		<= IF_inst;
+		IF_ID_vld		<= IF_vld;
+	end
+end
 
-   
-//////////////////////////////////////////////////
-//                                              //
-//                 MEM-Stage                    //
-//                                              //
-//////////////////////////////////////////////////
-mem_stage mem_stage_0 (
-//Inputs
-.clk				(clk),
-.rst				(rst),
-.ex_mem_regb		(ex_mem_regb),
 
-.ex_mem_alu_result	(ex_mem_alu_result),
-.ex_mem_rd_mem		(ex_mem_rd_mem),
-.ex_mem_wr_mem		(ex_mem_wr_mem),
-.Dmem2proc_data		(mem2proc_data),
-.ex_mem_valid_inst	(ex_mem_valid_inst),
 
-// Outputs
-.mem_result_out		(mem_result_out),
-.proc2Dmem_command	(proc2Dmem_command),
-.proc2Dmem_addr		(proc2Dmem_addr),
-.proc2Dmem_data		(proc2mem_data)
+// ID stage
+id_stage id_stage_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.RF_rs1_data		(RF_rs1_data),
+	.RF_rs2_data		(RF_rs2_data),
+	.IF_ID_pc			(IF_ID_pc),
+	.IF_ID_inst			(IF_ID_inst),
+	.IF_ID_vld			(IF_ID_vld),
+
+	.ID_rs1				(ID_rs1),
+	.ID_rs2				(ID_rs2),
+	.ID_alu_opa			(ID_alu_opa),
+	.ID_alu_opb			(ID_alu_opb),
+	.ID_alu_func		(ID_alu_func),
+	.ID_vld				(ID_vld),
+	.ID_mem_din			(ID_mem_din),
+	.ID_mem_cmd			(ID_mem_cmd),
+	.ID_rd				(ID_rd)
 );
 
 
-//////////////////////////////////////////////////
-//                                              //
-//           MEM/WB Pipeline Register           //
-//                                              //
-//////////////////////////////////////////////////
-assign mem_wb_enable = 1; // always enabled
-// synopsys sync_set_rst "rst"
+
+// ID/EX pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		//Control 
-		mem_wb_funct3		<=  0;
-		mem_wb_illegal      <=  0;
-		mem_wb_valid_inst   <=  `FALSE;
-		mem_wb_rd_mem    	<=  `FALSE;
-        mem_wb_reg_wr       <=  `FALSE;
-		//Data
-		mem_wb_IR           <=  `NOOP_INST;
-		mem_wb_dest_reg_idx <=  `ZERO_REG;
-		mem_wb_mem_result   <=  0;
-		mem_wb_alu_result   <=  0;
-		
-		//Debug
-		mem_wb_NPC			<=  0;
-	end else begin
-		if (mem_wb_enable) begin
-			mem_wb_funct3		<=  ex_mem_funct3;
-			mem_wb_rd_mem    	<=  ex_mem_rd_mem;
-			mem_wb_illegal      <=  ex_mem_illegal;
-			mem_wb_valid_inst   <=  ex_mem_valid_inst;
-			
-            mem_wb_reg_wr       <=  ex_mem_reg_wr;
-			mem_wb_IR           <=  ex_mem_IR;
-			mem_wb_dest_reg_idx <=  ex_mem_dest_reg_idx;
-			mem_wb_mem_result   <=  mem_result_out;
-			mem_wb_alu_result   <=  ex_mem_alu_result;
-			
-			mem_wb_NPC			<=  ex_mem_NPC;
-		end // if
-	end // else: !if(rst)
-end // always
+		ID_EX_alu_opa	<= 32'h0;
+		ID_EX_alu_opb	<= 32'h0;
+		ID_EX_alu_func	<= `ALU_ADD;
+		ID_EX_vld		<= `FALSE;
+		ID_EX_mem_din	<= 32'h0;
+		ID_EX_mem_cmd	<= `BUS_NONE;
+		ID_EX_rd		<= `ZERO_REG;
+	end
+	else if (`TRUE) begin
+		ID_EX_alu_opa	<= ID_alu_opa;
+		ID_EX_alu_opb	<= ID_alu_opb;
+		ID_EX_alu_func	<= ID_alu_func;
+		ID_EX_vld		<= ID_vld;
+		ID_EX_mem_din	<= ID_mem_din;
+		ID_EX_mem_cmd	<= ID_mem_cmd;
+		ID_EX_rd		<= ID_rd;
+	end
+end
 
-//////////////////////////////////////////////////
-//                                              //
-//                  WB-Stage                    //
-//                                              //
-//////////////////////////////////////////////////
+
+
+// EX stage
+ex_stage ex_stage_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.ID_EX_alu_opa		(ID_EX_alu_opa),
+	.ID_EX_alu_opb		(ID_EX_alu_opb),
+	.ID_EX_alu_func		(ID_EX_alu_func),
+	.ID_EX_vld			(ID_EX_vld),
+
+	.EX_alu_res			(EX_alu_res),
+	.EX_vld				(EX_vld)
+);
+
+
+
+// EX/MEM pipeline register
+always_ff @(posedge clk or posedge rst) begin
+	if (rst) begin
+		EX_MEM_alu_res	<= 32'h0;
+		EX_MEM_vld		<= `FALSE;
+		EX_MEM_mem_din	<= 32'h0;
+		EX_MEM_mem_cmd	<= `BUS_NONE;
+		EX_MEM_rd		<= `ZERO_REG;
+	end
+	else if (`TRUE) begin
+		EX_MEM_alu_res	<= EX_alu_res;
+		EX_MEM_vld		<= EX_vld;
+		EX_MEM_mem_din	<= ID_EX_mem_din;
+		EX_MEM_mem_cmd	<= ID_EX_mem_cmd;
+		EX_MEM_rd		<= ID_EX_rd;
+	end
+end
+
+
+
+// MEM stage
+mem_stage mem_stage_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.DM_mem_dout		(DM_mem_dout),
+	.EX_MEM_alu_res		(EX_MEM_alu_res),
+	.EX_MEM_vld			(EX_MEM_vld),
+	.EX_MEM_mem_din		(EX_MEM_mem_din),
+	.EX_MEM_mem_cmd		(EX_MEM_mem_cmd),
+
+	.MEM_mem_addr		(MEM_mem_addr),
+	.MEM_mem_cmd		(MEM_mem_cmd),
+	.MEM_mem_din		(MEM_mem_din),
+	.MEM_alu_res		(MEM_alu_res),
+	.MEM_mem_dout		(MEM_mem_dout),
+	.MEM_wb_sel			(MEM_wb_sel),
+	.MEM_vld			(MEM_vld)
+);
+
+
+
+// MEM/WB pipeline register
+always_ff @(posedge clk or posedge rst) begin
+	if (rst) begin
+		MEM_WB_alu_res	<= 32'h0;
+		MEM_WB_mem_dout	<= 32'h0;
+		MEM_WB_wb_sel	<= `WB_SEL_NONE;
+		MEM_WB_vld		<= `FALSE;
+		MEM_WB_rd		<= `ZERO_REG;
+	end
+	else if (`TRUE) begin
+		MEM_WB_alu_res	<= MEM_alu_res;
+		MEM_WB_mem_dout	<= MEM_mem_dout;
+		MEM_WB_wb_sel	<= MEM_wb_sel;
+		MEM_WB_vld		<= MEM_vld;
+		MEM_WB_rd		<= EX_MEM_rd;
+	end
+end
+
+
+
+// WB stage
 wb_stage wb_stage_0(
-.mem_wb_mem_result	(mem_wb_mem_result),
-.mem_wb_alu_result	(mem_wb_alu_result),
-.mem_wb_rd_mem		(mem_wb_rd_mem),
-.mem_wb_valid_inst  (mem_wb_valid_inst),
-		
-.wb_reg_wr_data_out	(wb_reg_wr_data_out)
+	.clk				(clk),
+	.rst				(rst),
+
+	.MEM_WB_alu_res		(MEM_WB_alu_res),
+	.MEM_WB_mem_dout	(MEM_WB_mem_dout),
+	.MEM_WB_wb_sel		(MEM_WB_wb_sel),
+	.MEM_WB_vld			(MEM_WB_vld),
+	.MEM_WB_rd			(MEM_WB_rd),
+
+	.WB_data			(WB_data),
+	.WB_rd				(WB_rd)
 );
 
-endmodule  
+
+
+// Register file
+register_file	register_file_0(
+	.clk				(clk),
+	.rst				(rst),
+
+	.WB_data			(WB_data),
+	.WB_rd				(WB_rd),
+	.ID_rs1				(ID_rs1),
+	.ID_rs2				(ID_rs2),
+
+	.RF_rs1_data		(RF_rs1_data),
+	.RF_rs2_data		(RF_rs2_data)
+);
+
+endmodule

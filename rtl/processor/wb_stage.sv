@@ -3,14 +3,17 @@
 `endif
 
 module wb_stage(
-	input logic [31:0] mem_wb_mem_result,
-	input logic [31:0] mem_wb_alu_result,
-	input logic mem_wb_rd_mem,
-	input logic mem_wb_valid_inst,
-	
-	output logic [31:0] wb_reg_wr_data_out
-);
+	input	logic			clk,
+	input	logic			rst,
 
-assign wb_reg_wr_data_out = (mem_wb_rd_mem & mem_wb_valid_inst) ? mem_wb_mem_result : mem_wb_alu_result;
+	input	logic	[31:0]	MEM_WB_alu_res,
+	input	logic	[31:0]	MEM_WB_mem_dout,
+	input	logic	[1:0]	MEM_WB_wb_sel,
+	input	logic			MEM_WB_vld,
+	input	logic	[4:0]	MEM_WB_rd,
+
+	output	logic	[31:0]	WB_data,
+	output	logic	[4:0]	WB_rd
+);
 
 endmodule

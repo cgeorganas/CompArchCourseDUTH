@@ -3,29 +3,22 @@
 `endif
 
 module mem_stage(
-    input logic   		clk,              // system clk
-    input logic   		rst,              // system rst
-    input logic [31:0] 	ex_mem_regb,        // regB value from reg file (store data)
-    input logic [31:0] 	ex_mem_alu_result,  // incoming ALU result from EX
-    input logic   		ex_mem_rd_mem,      // read memory? (from decoder)
-    input logic      	ex_mem_wr_mem,      // write memory? (from decoder)
-    input logic [31:0] 	Dmem2proc_data,
-    input logic         ex_mem_valid_inst,
+	input	logic			clk,
+	input	logic			rst,
 
-    output logic [31:0]	mem_result_out,    	// outgoing instruction result (to MEM/WB)
-    output logic [1:0] 	proc2Dmem_command,	
-    output logic [31:0] proc2Dmem_addr,    	// Address sent to data-memory
-	output logic [31:0] proc2Dmem_data     	// Data sent to data-memory
+	input	logic	[31:0]	DM_mem_dout,
+	input	logic	[31:0]	EX_MEM_alu_res,
+	input	logic			EX_MEM_vld,
+	input	logic	[31:0]	EX_MEM_mem_din,
+	input	logic	[1:0]	EX_MEM_mem_cmd,
+
+	output	logic	[31:0]	MEM_mem_addr,
+	output	logic	[1:0]	MEM_mem_cmd,
+	output	logic	[31:0]	MEM_mem_din,
+	output	logic	[31:0]	MEM_alu_res,
+	output	logic	[31:0]	MEM_mem_dout,
+	output	logic	[1:0]	MEM_wb_sel,
+	output	logic			MEM_vld
 );
 
-// Determine the command that must be sent to mem
-assign proc2Dmem_command = 	(ex_mem_wr_mem & ex_mem_valid_inst) ? `BUS_STORE : (ex_mem_rd_mem & ex_mem_valid_inst) ? `BUS_LOAD : `BUS_NONE;
-
-// The memory address is calculated by the ALU
-assign proc2Dmem_addr = ex_mem_alu_result;
-assign proc2Dmem_data = ex_mem_regb;
-
-// Assign the result-out for next stage
-assign mem_result_out = (ex_mem_rd_mem) ? Dmem2proc_data : ex_mem_alu_result;
-
-endmodule // module mem_stage
+endmodule

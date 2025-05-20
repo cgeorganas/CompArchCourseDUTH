@@ -2,162 +2,25 @@
 	`include "../sys_defs.vh"
 `endif
 
-//Instruction Decode Stage 
 module id_stage(
-input logic 		clk,              		// system clk
-input logic 		rst,              		// system rst
-input logic [31:0] 	if_id_IR,            	// incoming instruction
-input logic [31:0]	if_id_PC,
-input logic	        mem_wb_valid_inst,   	 	//Does the instruction write to rd?
-input logic	        mem_wb_reg_wr,   	 	//Does the instruction write to rd?
-input logic [4:0]	id_ex_dest_reg_idx,
-input logic [4:0]	ex_mem_dest_reg_idx,
-input logic [4:0]	mem_wb_dest_reg_idx, 	//index of rd
-input logic [31:0] 	wb_reg_wr_data_out, 	// Reg write data from WB Stage
-input logic         if_id_valid_inst,
+	input	logic			clk,
+	input	logic			rst,
 
-output logic [31:0] id_ra_value_out,    	// reg A value
-output logic [31:0] id_rb_value_out,    	// reg B value
-output logic [31:0]	id_immediate_out,		// sign-extended 32-bit immediate
-output logic [31:0] pc_add_opa,
+	input	logic	[31:0]	RF_rs1_data,
+	input	logic	[31:0]	RF_rs2_data,
+	input	logic	[31:0]	IF_ID_pc,
+	input	logic	[31:0]	IF_ID_inst,
+	input	logic			IF_ID_vld,
 
-output logic [2:0] 	id_opa_select_out,    	// ALU opa mux select (ALU_OPA_xxx *)
-output logic [2:0] 	id_opb_select_out,    	// ALU opb mux select (ALU_OPB_xxx *)
-
-output logic 		id_reg_wr_out,
-output logic [2:0] 	id_funct3_out,
-output logic [4:0] 	id_dest_reg_idx_out,  	// destination (writeback) register index (ZERO_REG if no writeback)
-output logic [4:0]  id_alu_func_out,        // ALU function select (ALU_xxx *)
-output logic       	id_rd_mem_out,          // does inst read memory?
-output logic 	    id_wr_mem_out,          // does inst write memory?
-output logic 		cond_branch,
-output logic        uncond_branch,
-output logic       	id_illegal_out,
-output logic       	id_valid_inst_out	  	// is inst a valid instruction to be counted for CPI calculations?
+	output	logic	[4:0]	ID_rs1,
+	output	logic	[4:0]	ID_rs2,
+	output	logic	[31:0]	ID_alu_opa,
+	output	logic	[31:0]	ID_alu_opb,
+	output	logic	[4:0]	ID_alu_func,
+	output	logic			ID_vld,
+	output	logic	[31:0]	ID_mem_din,
+	output	logic	[1:0]	ID_mem_cmd,
+	output	logic	[4:0]	ID_rd
 );
 
-logic dest_reg_select;
-logic [31:0] rb_val;
-
-//instruction fields read from IF/ID pipeline register
-logic[4:0] ra_idx; 
-logic[4:0] rb_idx; 
-logic[4:0] rc_idx; 
-
-assign ra_idx=if_id_IR[19:15];	// inst operand A register index
-assign rb_idx=if_id_IR[24:20];	// inst operand B register index
-assign rc_idx=if_id_IR[11:7];  // inst operand C register index
-// Instantiate the register file used by this pipeline
-
-logic write_en;
-assign write_en=mem_wb_valid_inst & mem_wb_reg_wr;
-
-regfile regf_0(
-	.clk		(clk),
-	.rst		(rst),
-	.rda_idx	(ra_idx),
-	.rda_out	(id_ra_value_out),
-	.rdb_idx	(rb_idx),
-	.rdb_out	(id_rb_value_out),
-	.wr_en		(write_en),
-	.wr_idx		(mem_wb_dest_reg_idx),
-	.wr_data	(wb_reg_wr_data_out)
-	);
-
-logic [1:0] reg_fields;
-logic [2:0] opa_select, opb_select;
-
-// instantiate the instruction inst_decoder
-inst_decoder inst_decoder_0(
-	.inst			(if_id_IR),
-	.valid_inst_in	(if_id_valid_inst),
-	.opa_select		(opa_select),
-	.opb_select		(opb_select),
-	.alu_func		(id_alu_func_out),
-	.dest_reg		(dest_reg_select),
-	.rd_mem			(id_rd_mem_out),
-	.wr_mem			(id_wr_mem_out),
-	.cond_branch	(cond_branch),
-	.uncond_branch	(uncond_branch),
-	.illegal		(id_illegal_out),
-	.valid_inst		(id_valid_inst_out),
-	.reg_fields		(reg_fields)
-);
-
-always_comb begin
-	case (ra_idx) //rs1
-		5'b00000				: id_opa_select_out = opa_select;
-		id_ex_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_1;
-		ex_mem_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_2;
-		mem_wb_dest_reg_idx		: id_opa_select_out = `ALU_OPA_FOWARD_3;
-		default					: id_opa_select_out = opa_select;
-	endcase
-	case (rb_idx) //rs2
-		5'b00000				: id_opb_select_out = opb_select;
-		id_ex_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_1;
-		ex_mem_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_2;
-		mem_wb_dest_reg_idx		: id_opb_select_out = `ALU_OPB_FOWARD_3;
-		default					: id_opb_select_out = opb_select;
-	endcase
-	if (~reg_fields[0])			id_opa_select_out = opa_select;
-	if (~reg_fields[1])			id_opb_select_out = opb_select;
-end
-
-always_comb begin : write_to_rd
-	case(if_id_IR[6:0])
-		`R_TYPE, `U_LD_TYPE, `U_AUIPC_TYPE		: id_reg_wr_out = `TRUE;
-		`I_ARITH_TYPE, `I_LD_TYPE, `I_JAL_TYPE	: id_reg_wr_out = `TRUE;
-		`J_TYPE									: id_reg_wr_out = `TRUE;
-		default: id_reg_wr_out = `FALSE;
-	endcase
-end
-
-// mux to generate dest_reg_idx based on
-// the dest_reg_select output from inst_decoder
-always_comb begin
-	if(dest_reg_select==`DEST_IS_REGC)
-		id_dest_reg_idx_out = rc_idx;
-	else
-		id_dest_reg_idx_out = `ZERO_REG;
-end
-
-//ultimate "take branch" signal: unconditional, or conditional and the condition is true
-
-
-//set up possible immediates:
-//jmp_disp: 20-bit sign-extended immediate for jump displacement;
-//up_imm: 20-bit immediate << 12;
-//br_disp: sign-extended 12-bit immediate * 2 for branch displacement 
-//mem_disp: sign-extended 12-bit immediate for memory displacement 
-//alu_imm: sign-extended 12-bit immediate for ALU ops
-logic[31:0] jmp_disp;
-logic[31:0] up_imm;	
-logic[31:0] br_disp; 	
-logic[31:0] mem_disp; 
-logic[31:0] alu_imm;	
-
-assign jmp_disp={{12{if_id_IR[31]}}, if_id_IR[19:12], if_id_IR[20], if_id_IR[30:21], 1'b0};
-assign up_imm = {if_id_IR[31:12], 12'b0};
-assign br_disp = {{20{if_id_IR[31]}}, if_id_IR[7], if_id_IR[30:25], if_id_IR[11:8], 1'b0};
-assign mem_disp = {{20{if_id_IR[31]}}, if_id_IR[31:25], if_id_IR[11:7]};
-assign alu_imm = {{20{if_id_IR[31]}}, if_id_IR[31:20]};
-
-
-always_comb begin : immediate_mux
-	case(if_id_IR[6:0])
-		`S_TYPE: id_immediate_out = mem_disp;
-		`B_TYPE: id_immediate_out = br_disp;
-		`J_TYPE: id_immediate_out = jmp_disp;
-		`U_LD_TYPE, `U_AUIPC_TYPE: id_immediate_out = up_imm;
-		default:id_immediate_out = alu_imm;
-	endcase
-end
-
-assign pc_add_opa =(if_id_IR[6:0] == `I_JAL_TYPE)? id_ra_value_out:if_id_PC;
-
-
-//target PC to branch to
-
-assign id_funct3_out = if_id_IR[14:12];
-
-endmodule // module id_stage
+endmodule
