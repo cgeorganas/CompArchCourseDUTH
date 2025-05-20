@@ -317,6 +317,11 @@ stall stall_0(
 	.clk				(clk),
 	.rst				(rst),
 
+	.ID_rs1				(ID_rs1),
+	.ID_rs2				(ID_rs2),
+	.ID_EX_rd			(ID_EX_rd),
+	.ID_EX_mem_cmd		(ID_EX_mem_cmd),
+
 	.ST_if_id_en		(ST_if_id_en),
 	.ST_id_ex_en		(ST_id_ex_en),
 	.ST_ex_mem_en		(ST_ex_mem_en),
