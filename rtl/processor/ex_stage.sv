@@ -13,6 +13,8 @@ module ex_stage(
 	input	logic	[5:0]	ID_EX_alu_sel,
 	input	logic	[4:0]	ID_EX_alu_func,
 	input	logic			ID_EX_vld,
+	input 	logic	[31:0]	MEM_data,
+	input 	logic	[31:0]	WB_data,
 
 	output	logic	[31:0]	EX_mem_din,
 	output	logic	[31:0]	EX_alu_res,
@@ -27,11 +29,15 @@ always_comb begin
 	case(ID_EX_alu_sel[5:3])
 		`SEL_RS:	opa = ID_EX_rs1_data;
 		`SEL_PC:	opa = ID_EX_pc;
+		`SEL_F1:	opa = MEM_data;
+		`SEL_F2:	opa = WB_data;
 		default:	opa = 32'h0000_0000;
 	endcase
 	case(ID_EX_alu_sel[2:0])
 		`SEL_RS:	opb = ID_EX_rs2_data;
 		`SEL_IMM:	opb = ID_EX_imm;
+		`SEL_F1:	opb = MEM_data;
+		`SEL_F2:	opb = WB_data;
 		default:	opb = 32'h0000_0004;
 	endcase
 end

@@ -54,13 +54,15 @@ always_comb begin
 		default:										opa_sel = `SEL_0;
 	endcase
 
-	//Forwarding override
-	// case (ID_rs1)
-	// 	`ZERO_REG:										opa_sel = `SEL_0;
-	// 	ID_EX_rd:										opa_sel = `SEL_F1;
-	// 	EX_MEM_rd:										opa_sel = `SEL_F2;
-	// 	MEM_WB_rd:										opa_sel = `SEL_F3;
-	// endcase
+	// Forwarding override
+	if (opa_sel===`SEL_RS) begin
+		case (ID_rs1)
+			`ZERO_REG:										opa_sel = `SEL_0;
+			ID_EX_rd:										opa_sel = `SEL_F1;
+			EX_MEM_rd:										opa_sel = `SEL_F2;
+			// MEM_WB_rd:										opa_sel = `SEL_F3;
+		endcase
+	end
 
 	case (IF_ID_inst[6:0])
 		`R_TYPE:										opb_sel = `SEL_RS;
@@ -69,13 +71,15 @@ always_comb begin
 		default:										opb_sel = `SEL_4;
 	endcase
 
-	//Forwarding override
-	// case (ID_rs2)
-	// 	`ZERO_REG:										opb_sel = `SEL_0;
-	// 	ID_EX_rd:										opb_sel = `SEL_F1;
-	// 	EX_MEM_rd:										opb_sel = `SEL_F2;
-	// 	MEM_WB_rd:										opb_sel = `SEL_F3;
-	// endcase
+	// Forwarding override
+	if (opb_sel===`SEL_RS) begin
+		case (ID_rs2)
+			`ZERO_REG:										opb_sel = `SEL_0;
+			ID_EX_rd:										opb_sel = `SEL_F1;
+			EX_MEM_rd:										opb_sel = `SEL_F2;
+			// MEM_WB_rd:										opb_sel = `SEL_F3;
+		endcase
+	end
 
 	ID_alu_func = `ALU_ADD;
 

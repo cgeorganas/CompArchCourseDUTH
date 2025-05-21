@@ -217,6 +217,8 @@ ex_stage ex_stage_0(
 	.ID_EX_alu_sel		(ID_EX_alu_sel),
 	.ID_EX_alu_func		(ID_EX_alu_func),
 	.ID_EX_vld			(ID_EX_vld),
+	.MEM_data			(MEM_data),
+	.WB_data			(WB_data),
 
 	.EX_mem_din			(EX_mem_din),
 	.EX_alu_res			(EX_alu_res),
