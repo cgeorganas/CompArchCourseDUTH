@@ -8,8 +8,8 @@ module register_file(
 
 	input	logic	[31:0]	WB_data,
 	input	logic	[4:0]	WB_rd,
-	input	logic	[4:0]	ID_rs1,
-	input	logic	[4:0]	ID_rs2,
+	input	logic	[4:0]	ID_EX_rs1,
+	input	logic	[4:0]	ID_EX_rs2,
 
 	output	logic	[31:0]	RF_rs1_data,
 	output	logic	[31:0]	RF_rs2_data
@@ -17,8 +17,8 @@ module register_file(
 
 logic [31:0] registers [0:31];
 
-assign RF_rs1_data = registers[ID_rs1];
-assign RF_rs2_data = registers[ID_rs2];
+assign RF_rs1_data = registers[ID_EX_rs1];
+assign RF_rs2_data = registers[ID_EX_rs2];
 
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin

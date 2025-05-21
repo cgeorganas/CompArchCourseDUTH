@@ -40,7 +40,6 @@ logic			IF_ID_vld;
 // Outputs from ID stage
 logic	[4:0]	ID_rs1;
 logic	[4:0]	ID_rs2;
-
 logic	[31:0]	ID_pc;
 logic	[31:0]	ID_imm;
 logic	[5:0]	ID_alu_sel;
@@ -53,8 +52,8 @@ logic	[4:0]	ID_rd;
 
 
 // Outputs from ID/EX pipeline register
-logic	[31:0]	ID_EX_rs1_data;
-logic	[31:0]	ID_EX_rs2_data;
+logic	[4:0]	ID_EX_rs1;
+logic	[4:0]	ID_EX_rs2;
 logic	[31:0]	ID_EX_pc;
 logic	[31:0]	ID_EX_imm;
 logic	[5:0]	ID_EX_alu_sel;
@@ -162,7 +161,6 @@ id_stage id_stage_0(
 	.IF_ID_vld			(IF_ID_vld),
 	.ID_EX_rd			(ID_EX_rd),
 	.EX_MEM_rd			(EX_MEM_rd),
-	.MEM_WB_rd			(MEM_WB_rd),
 
 	.ID_rs1				(ID_rs1),
 	.ID_rs2				(ID_rs2),
@@ -180,8 +178,8 @@ id_stage id_stage_0(
 // ID/EX pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		ID_EX_rs1_data	<= 32'h0;
-		ID_EX_rs2_data	<= 32'h0;
+		ID_EX_rs1		<= 5'h0;
+		ID_EX_rs2		<= 5'h0;
 		ID_EX_pc		<= 32'h0;
 		ID_EX_imm		<= 32'h0;
 		ID_EX_alu_sel	<= 6'h0;
@@ -191,8 +189,8 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_rd		<= `ZERO_REG;
 	end
 	else if (ST_id_ex_en) begin
-		ID_EX_rs1_data	<= RF_rs1_data;
-		ID_EX_rs2_data	<= RF_rs2_data;
+		ID_EX_rs1		<= ID_rs1;
+		ID_EX_rs2		<= ID_rs2;
 		ID_EX_pc		<= ID_pc;
 		ID_EX_imm		<= ID_imm;
 		ID_EX_alu_sel	<= ID_alu_sel;
@@ -210,8 +208,8 @@ ex_stage ex_stage_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.ID_EX_rs1_data		(ID_EX_rs1_data),
-	.ID_EX_rs2_data		(ID_EX_rs2_data),
+	.RF_rs1_data		(RF_rs1_data),
+	.RF_rs2_data		(RF_rs2_data),
 	.ID_EX_pc			(ID_EX_pc),
 	.ID_EX_imm			(ID_EX_imm),
 	.ID_EX_alu_sel		(ID_EX_alu_sel),
@@ -306,8 +304,8 @@ register_file register_file_0(
 
 	.WB_data			(WB_data),
 	.WB_rd				(WB_rd),
-	.ID_rs1				(ID_rs1),
-	.ID_rs2				(ID_rs2),
+	.ID_EX_rs1			(ID_EX_rs1),
+	.ID_EX_rs2			(ID_EX_rs2),
 
 	.RF_rs1_data		(RF_rs1_data),
 	.RF_rs2_data		(RF_rs2_data)

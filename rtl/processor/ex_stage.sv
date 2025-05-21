@@ -6,8 +6,8 @@ module ex_stage(
 	input	logic			clk,
 	input	logic			rst,
 
-	input	logic	[31:0]	ID_EX_rs1_data,
-	input	logic	[31:0]	ID_EX_rs2_data,
+	input	logic	[31:0]	RF_rs1_data,
+	input	logic	[31:0]	RF_rs2_data,
 	input	logic	[31:0]	ID_EX_pc,
 	input	logic	[31:0]	ID_EX_imm,
 	input	logic	[5:0]	ID_EX_alu_sel,
@@ -27,14 +27,14 @@ logic [31:0] opa, opb;
 
 always_comb begin
 	case(ID_EX_alu_sel[5:3])
-		`SEL_RS:	opa = ID_EX_rs1_data;
+		`SEL_RS:	opa = RF_rs1_data;
 		`SEL_PC:	opa = ID_EX_pc;
 		`SEL_F1:	opa = MEM_data;
 		`SEL_F2:	opa = WB_data;
 		default:	opa = 32'h0000_0000;
 	endcase
 	case(ID_EX_alu_sel[2:0])
-		`SEL_RS:	opb = ID_EX_rs2_data;
+		`SEL_RS:	opb = RF_rs2_data;
 		`SEL_IMM:	opb = ID_EX_imm;
 		`SEL_F1:	opb = MEM_data;
 		`SEL_F2:	opb = WB_data;
@@ -81,6 +81,6 @@ always_comb begin
 	endcase
 end
 
-assign EX_mem_din = ID_EX_rs2_data;
+assign EX_mem_din = RF_rs2_data;
 
 endmodule
