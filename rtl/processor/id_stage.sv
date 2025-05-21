@@ -9,16 +9,9 @@ module id_stage(
 	input	logic	[31:0]	IF_ID_pc,
 	input	logic	[31:0]	IF_ID_inst,
 	input	logic			IF_ID_vld,
-
-	// input	logic	[4:0]	ID_EX_rd,
-	// input	logic	[4:0]	EX_MEM_rd,
-	// input	logic	[4:0]	MEM_WB_rd,
-	// input	logic	[1:0]	ID_EX_mem_cmd,
-	// input	logic	[1:0]	EX_MEM_mem_cmd,
-	// input	logic	[31:0]	EX_alu_res,
-	// input	logic	[31:0]	MEM_alu_res,
-	// input	logic	[31:0]	MEM_mem_dout,
-	// input	logic	[31:0]	WB_data,
+	input	logic	[4:0]	ID_EX_rd,
+	input	logic	[4:0]	EX_MEM_rd,
+	input	logic	[4:0]	MEM_WB_rd,
 
 	output	logic	[4:0]	ID_rs1,
 	output	logic	[4:0]	ID_rs2,
@@ -56,17 +49,33 @@ always_comb begin
 	endcase
 
 	case (IF_ID_inst[6:0])
-		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE,`S_TYPE:		opa_sel = `SEL_RS1;
+		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE,`S_TYPE:		opa_sel = `SEL_RS;
 		`I_JAL_TYPE, `B_TYPE, `J_TYPE, `U_AUIPC_TYPE:	opa_sel = `SEL_PC;
-		default:										opa_sel = `SEL_ZR;
+		default:										opa_sel = `SEL_0;
 	endcase
 
+	//Forwarding override
+	// case (ID_rs1)
+	// 	`ZERO_REG:										opa_sel = `SEL_0;
+	// 	ID_EX_rd:										opa_sel = `SEL_F1;
+	// 	EX_MEM_rd:										opa_sel = `SEL_F2;
+	// 	MEM_WB_rd:										opa_sel = `SEL_F3;
+	// endcase
+
 	case (IF_ID_inst[6:0])
-		`R_TYPE:										opb_sel = `SEL_RS2;
+		`R_TYPE:										opb_sel = `SEL_RS;
 		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
 		`B_TYPE, `U_LD_TYPE, `U_AUIPC_TYPE:				opb_sel = `SEL_IMM;
 		default:										opb_sel = `SEL_4;
 	endcase
+
+	//Forwarding override
+	// case (ID_rs2)
+	// 	`ZERO_REG:										opb_sel = `SEL_0;
+	// 	ID_EX_rd:										opb_sel = `SEL_F1;
+	// 	EX_MEM_rd:										opb_sel = `SEL_F2;
+	// 	MEM_WB_rd:										opb_sel = `SEL_F3;
+	// endcase
 
 	ID_alu_func = `ALU_ADD;
 

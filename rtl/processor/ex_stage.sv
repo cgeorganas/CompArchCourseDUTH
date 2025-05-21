@@ -25,12 +25,12 @@ logic [31:0] opa, opb;
 
 always_comb begin
 	case(ID_EX_alu_sel[5:3])
-		`SEL_RS1:	opa = ID_EX_rs1_data;
+		`SEL_RS:	opa = ID_EX_rs1_data;
 		`SEL_PC:	opa = ID_EX_pc;
 		default:	opa = 32'h0000_0000;
 	endcase
 	case(ID_EX_alu_sel[2:0])
-		`SEL_RS2:	opb = ID_EX_rs2_data;
+		`SEL_RS:	opb = ID_EX_rs2_data;
 		`SEL_IMM:	opb = ID_EX_imm;
 		default:	opb = 32'h0000_0004;
 	endcase

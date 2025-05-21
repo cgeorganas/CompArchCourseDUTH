@@ -78,21 +78,15 @@
 `define BLTU_INST				3'h6
 `define BGEU_INST				3'h7
 
-//ALU opa input mux selects
-`define SEL_RS1					3'h0
+//ALU operand selector
+`define SEL_RS					3'h0
 `define	SEL_PC					3'h1
-`define	SEL_ZR					3'h2
-`define	SEL_F1					3'h3
-`define	SEL_F2					3'h4
-`define	SEL_F3					3'h5
-
-//ALU opb input mux selects
-`define	SEL_RS2					3'h0
-`define	SEL_IMM					3'h1
-`define SEL_4					3'h2
-`define	SEL_F1					3'h3
-`define	SEL_F2					3'h4
-`define	SEL_F3					3'h5
+`define	SEL_IMM					3'h2
+`define	SEL_0					3'h3
+`define SEL_4					3'h4
+`define	SEL_F1					3'h5
+`define	SEL_F2					3'h6
+`define	SEL_F3					3'h7
 
 // Destination register select
 `define DEST_IS_REGC			1'b0
