@@ -34,7 +34,7 @@ assign	TB_im_mem_cmd=`MEM_LW;
 logic	[3:0]	TB_im_mem2proc_response;
 logic	[3:0]	TB_im_mem2proc_tag;
 
-mem IM(
+inst_mem inst_mem_0(
 	.clk				(clk),
 	.proc2mem_addr		(IF_pc),
 	.proc2mem_data		(TB_im_din),
@@ -45,18 +45,15 @@ mem IM(
 	.mem2proc_tag		(TB_im_mem2proc_tag)
 );
 
-logic	[3:0]	TB_dm_mem2proc_response;
-logic	[3:0]	TB_dm_mem2proc_tag;
-
-mem DM(
+data_mem data_mem_0(
 	.clk				(clk),
-	.proc2mem_addr		(MEM_mem_addr),
-	.proc2mem_data		(MEM_mem_din),
-	.proc2mem_command	(MEM_mem_cmd),
+	.rst				(rst),
 
-	.mem2proc_response	(TB_dm_mem2proc_response),
-	.mem2proc_data		(DM_mem_dout),
-	.mem2proc_tag		(TB_dm_mem2proc_tag)
+	.MEM_mem_addr		(MEM_mem_addr),
+	.MEM_mem_din		(MEM_mem_din),
+	.MEM_mem_cmd			(MEM_mem_cmd),
+
+	.DM_mem_dout		(DM_mem_dout)
 );
 
 initial begin
@@ -65,8 +62,8 @@ initial begin
 end
 
 initial begin
-	$readmemh("testshex.txt",IM.unified_memory);
-	$readmemh("testshex.txt",DM.unified_memory);
+	$readmemh("testshex.txt",inst_mem_0.unified_memory);
+	// $readmemh("testshex.txt",DM.unified_memory);
 end
 
 initial begin

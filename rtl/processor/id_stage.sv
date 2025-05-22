@@ -68,7 +68,7 @@ always_comb begin
 	endcase
 
 	case (opcode)
-		`R_TYPE, `S_TYPE, `B_TYPE: begin
+		`R_TYPE, `B_TYPE: begin
 			case (ID_rs2)
 				`ZERO_REG:								opb_sel = `SEL_0;
 				ID_EX_rd:								opb_sel = `SEL_F1;
@@ -76,7 +76,7 @@ always_comb begin
 				default:								opb_sel = `SEL_RS;
 			endcase
 		end
-		`I_ARITH_TYPE, `I_LD_TYPE:						opb_sel = `SEL_IMM;
+		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
 		`U_LD_TYPE, `U_AUIPC_TYPE:						opb_sel = `SEL_IMM;
 		default:										opb_sel = `SEL_4;
 	endcase

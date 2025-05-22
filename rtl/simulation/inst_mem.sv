@@ -2,7 +2,7 @@
 	`include "../sys_defs.vh"
 `endif
 
-module mem (
+module inst_mem (
     input         clk,              // Memory clock
     input logic [31:0] proc2mem_addr,    // address for current command
     input logic [31:0] proc2mem_data,    // address for current command

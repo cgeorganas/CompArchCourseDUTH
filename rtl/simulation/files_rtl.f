@@ -9,5 +9,6 @@
 ../processor/stall.sv
 ../processor/processor.sv
 
-memory.sv
+inst_mem.sv
+data_mem.sv
 processor_tb.sv
