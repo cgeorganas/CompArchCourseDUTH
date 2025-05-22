@@ -37,9 +37,16 @@ assign imm_b = {{20{IF_ID_inst[31]}}, IF_ID_inst[7], IF_ID_inst[30:25], IF_ID_in
 assign imm_j = {{12{IF_ID_inst[31]}}, IF_ID_inst[19:12], IF_ID_inst[20], IF_ID_inst[30:21], 1'b0};
 assign imm_u = {IF_ID_inst[31:12], 12'b0};
 
+logic [6:0] opcode;
+assign opcode = IF_ID_inst[6:0];
+logic [6:0] funct7;
+assign funct7 = IF_ID_inst[31:25];
+logic [2:0] funct3;
+assign funct3 = IF_ID_inst[14:12];
+
 always_comb begin
 
-	case (IF_ID_inst[6:0])
+	case (opcode)
 		`S_TYPE:										ID_imm = imm_s;
 		`B_TYPE:										ID_imm = imm_b;
 		`J_TYPE:										ID_imm = imm_j;
@@ -47,8 +54,8 @@ always_comb begin
 		default:										ID_imm = imm_i;
 	endcase
 
-	case (IF_ID_inst[6:0])
-		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE,`S_TYPE: begin
+	case (opcode)
+		`R_TYPE,`S_TYPE, `B_TYPE, `I_ARITH_TYPE, `I_LD_TYPE: begin
 			case (ID_rs1)
 				`ZERO_REG:								opa_sel = `SEL_0;
 				ID_EX_rd:								opa_sel = `SEL_F1;
@@ -56,12 +63,12 @@ always_comb begin
 				default:								opa_sel = `SEL_RS;
 			endcase
 		end
-		`I_JAL_TYPE, `B_TYPE, `J_TYPE, `U_AUIPC_TYPE:	opa_sel = `SEL_PC;
+		`I_JAL_TYPE, `J_TYPE, `U_AUIPC_TYPE:			opa_sel = `SEL_PC;
 		default:										opa_sel = `SEL_0;
 	endcase
 
-	case (IF_ID_inst[6:0])
-		`R_TYPE: begin
+	case (opcode)
+		`R_TYPE, `S_TYPE, `B_TYPE: begin
 			case (ID_rs2)
 				`ZERO_REG:								opb_sel = `SEL_0;
 				ID_EX_rd:								opb_sel = `SEL_F1;
@@ -69,15 +76,15 @@ always_comb begin
 				default:								opb_sel = `SEL_RS;
 			endcase
 		end
-		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
-		`B_TYPE, `U_LD_TYPE, `U_AUIPC_TYPE:				opb_sel = `SEL_IMM;
+		`I_ARITH_TYPE, `I_LD_TYPE:						opb_sel = `SEL_IMM;
+		`U_LD_TYPE, `U_AUIPC_TYPE:						opb_sel = `SEL_IMM;
 		default:										opb_sel = `SEL_4;
 	endcase
 
 	ID_alu_func = `ALU_ADD;
 
-	if (IF_ID_inst[6:0]==`R_TYPE) begin
-		case({IF_ID_inst[14:12], IF_ID_inst[31:25]})
+	if (opcode==`R_TYPE) begin
+		case({funct3, funct7})
 			`ADD_INST:									ID_alu_func = `ALU_ADD;
 			`SUB_INST:									ID_alu_func = `ALU_SUB;
 			`XOR_INST:									ID_alu_func = `ALU_XOR;
@@ -96,8 +103,8 @@ always_comb begin
 		endcase
 	end
 
-	if (IF_ID_inst[6:0]==`I_ARITH_TYPE) begin
-		case(IF_ID_inst[14:12])
+	if (opcode==`I_ARITH_TYPE) begin
+		case(funct3)
 			`ADDI_INST:									ID_alu_func = `ALU_ADD;
 			`XORI_INST:									ID_alu_func = `ALU_XOR;
 			`ORI_INST:									ID_alu_func = `ALU_OR;
@@ -110,20 +117,20 @@ always_comb begin
 		endcase
 	end
 
-	case (IF_ID_inst[6:0])
+	case (opcode)
 		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE:				ID_vld = IF_ID_vld;
 		`I_JAL_TYPE, `S_TYPE, `B_TYPE, `J_TYPE:			ID_vld = IF_ID_vld;
 		`U_LD_TYPE, `U_AUIPC_TYPE, `I_BREAK_TYPE:		ID_vld = IF_ID_vld;
 		default:										ID_vld = `FALSE;
 	endcase
 
-	case (IF_ID_inst[6:0])
+	case (opcode)
 		`I_LD_TYPE:										ID_mem_cmd = `BUS_LOAD;
 		`S_TYPE:										ID_mem_cmd = `BUS_STORE;
 		default:										ID_mem_cmd = `BUS_NONE;
 	endcase
 
-	case (IF_ID_inst[6:0])
+	case (opcode)
 		`S_TYPE, `B_TYPE, `I_BREAK_TYPE:				ID_rd = `ZERO_REG;
 		default:										ID_rd = IF_ID_inst[11:7];
 	endcase
