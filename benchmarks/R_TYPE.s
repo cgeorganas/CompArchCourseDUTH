@@ -120,14 +120,14 @@ xor		a0, a3, a4
 
 # Test 4
 li		a1, 0x11111111
-li		a2, 0x1F
+li		a2, 0x1f
 li		a3, 0x80000000
 sll		a4, a1, a2
 xor		a0, a3, a4
 
 # Test 5
 li		a1, 0x11111111
-li		a2, 0xF1F
+li		a2, 0xf1f
 li		a3, 0x80000000
 sll		a4, a1, a2
 xor		a0, a3, a4
@@ -304,14 +304,14 @@ xor		a0, a3, a4
 
 # Test 4
 li		a1, 0x88888888
-li		a2, 0x1F
+li		a2, 0x1f
 li		a3, 0x1
 srl		a4, a1, a2
 xor		a0, a3, a4
 
 # Test 5
 li		a1, 0x88888888
-li		a2, 0xF1F
+li		a2, 0xf1f
 li		a3, 0x1
 srl		a4, a1, a2
 xor		a0, a3, a4
@@ -350,14 +350,14 @@ xor		a0, a3, a4
 
 # Test 4
 li		a1, 0x88888888
-li		a2, 0x1F
+li		a2, 0x1f
 li		a3, 0xffffffff
 sra		a4, a1, a2
 xor		a0, a3, a4
 
 # Test 5
 li		a1, 0x88888888
-li		a2, 0xF1F
+li		a2, 0xf1f
 li		a3, 0xffffffff
 sra		a4, a1, a2
 xor		a0, a3, a4
