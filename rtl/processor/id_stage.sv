@@ -88,6 +88,10 @@ always_comb begin
 			`SRA_INST:									ID_alu_func = `ALU_SRA;
 			`SLT_INST:									ID_alu_func = `ALU_SLT;
 			`SLTU_INST:									ID_alu_func = `ALU_SLTU;
+			`MUL_INST:									ID_alu_func = `ALU_MUL;
+			`MULH_INST:									ID_alu_func = `ALU_MULH;
+			`MULHSU_INST:								ID_alu_func = `ALU_MULHSU;
+			`MULHU_INST:								ID_alu_func = `ALU_MULHU;
 			default:									ID_vld = `FALSE;
 		endcase
 	end
