@@ -16,7 +16,7 @@ module id_stage(
 	output	logic	[4:0]	ID_rs2,
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
-	output	logic	[5:0]	ID_alu_sel,
+	output	logic	[8:0]	ID_mux_sel,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
@@ -27,8 +27,8 @@ assign ID_rs1 = IF_ID_inst[19:15];
 assign ID_rs2 = IF_ID_inst[24:20];
 assign ID_pc = IF_ID_pc;
 
-logic [2:0] opa_sel, opb_sel;
-assign ID_alu_sel = {opa_sel, opb_sel};
+logic [2:0] opa_sel, opb_sel, din_sel;
+assign ID_mux_sel = {opa_sel, opb_sel, din_sel};
 
 logic [31:0] imm_i, imm_s, imm_b, imm_j, imm_u;
 assign imm_i = {{20{IF_ID_inst[31]}}, IF_ID_inst[31:20]};
@@ -79,6 +79,14 @@ always_comb begin
 		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
 		`U_LD_TYPE, `U_AUIPC_TYPE:						opb_sel = `SEL_IMM;
 		default:										opb_sel = `SEL_4;
+	endcase
+
+	// This will run for all instructions but it doesn't matter
+	case (ID_rs2)
+		`ZERO_REG:										din_sel = `SEL_0;
+		ID_EX_rd:										din_sel = `SEL_F1;
+		EX_MEM_rd:										din_sel = `SEL_F2;
+		default:										din_sel = `SEL_RS;
 	endcase
 
 	ID_alu_func = `ALU_ADD;

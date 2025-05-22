@@ -42,7 +42,7 @@ logic	[4:0]	ID_rs1;
 logic	[4:0]	ID_rs2;
 logic	[31:0]	ID_pc;
 logic	[31:0]	ID_imm;
-logic	[5:0]	ID_alu_sel;
+logic	[8:0]	ID_mux_sel;
 logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
@@ -56,7 +56,7 @@ logic	[4:0]	ID_EX_rs1;
 logic	[4:0]	ID_EX_rs2;
 logic	[31:0]	ID_EX_pc;
 logic	[31:0]	ID_EX_imm;
-logic	[5:0]	ID_EX_alu_sel;
+logic	[8:0]	ID_EX_mux_sel;
 logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
@@ -166,7 +166,7 @@ id_stage id_stage_0(
 	.ID_rs2				(ID_rs2),
 	.ID_pc				(ID_pc),
 	.ID_imm				(ID_imm),
-	.ID_alu_sel			(ID_alu_sel),
+	.ID_mux_sel			(ID_mux_sel),
 	.ID_alu_func		(ID_alu_func),
 	.ID_vld				(ID_vld),
 	.ID_mem_cmd			(ID_mem_cmd),
@@ -182,7 +182,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_rs2		<= 5'h0;
 		ID_EX_pc		<= 32'h0;
 		ID_EX_imm		<= 32'h0;
-		ID_EX_alu_sel	<= 6'h0;
+		ID_EX_mux_sel	<= 6'h0;
 		ID_EX_alu_func	<= `ALU_ADD;
 		ID_EX_vld		<= `FALSE;
 		ID_EX_mem_cmd	<= `MEM_NONE;
@@ -193,7 +193,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_rs2		<= ID_rs2;
 		ID_EX_pc		<= ID_pc;
 		ID_EX_imm		<= ID_imm;
-		ID_EX_alu_sel	<= ID_alu_sel;
+		ID_EX_mux_sel	<= ID_mux_sel;
 		ID_EX_alu_func	<= ID_alu_func;
 		ID_EX_vld		<= ID_vld;
 		ID_EX_mem_cmd	<= ID_mem_cmd;
@@ -212,7 +212,7 @@ ex_stage ex_stage_0(
 	.RF_rs2_data		(RF_rs2_data),
 	.ID_EX_pc			(ID_EX_pc),
 	.ID_EX_imm			(ID_EX_imm),
-	.ID_EX_alu_sel		(ID_EX_alu_sel),
+	.ID_EX_mux_sel		(ID_EX_mux_sel),
 	.ID_EX_alu_func		(ID_EX_alu_func),
 	.ID_EX_vld			(ID_EX_vld),
 	.MEM_data			(MEM_data),

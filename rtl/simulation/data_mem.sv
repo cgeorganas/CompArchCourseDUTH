@@ -18,7 +18,7 @@ assign b_addr = MEM_mem_addr;
 assign h_addr = {MEM_mem_addr[31:1], 1'b0};
 assign w_addr = {MEM_mem_addr[31:2], 2'b0};
 
-logic [31:0] memory [0:(`MEM_32BIT_LINES-1)];
+logic [31:0] memory [(`MEM_32BIT_LINES-1):0];
 
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
@@ -35,6 +35,6 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 end
 
-assign DM_mem_dout = memory[MEM_mem_din];
+assign DM_mem_dout = memory[w_addr];
 
 endmodule
