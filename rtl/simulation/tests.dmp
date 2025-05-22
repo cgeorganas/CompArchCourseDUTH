@@ -920,3 +920,80 @@ Disassembly of section .text:
  e40:	00000693          	li	a3,0
  e44:	02c5b733          	mulhu	a4,a1,a2
  e48:	00e6c533          	xor	a0,a3,a4
+ e4c:	10000593          	li	a1,256
+ e50:	12345637          	lui	a2,0x12345
+ e54:	67860613          	addi	a2,a2,1656 # 12345678 <.text+0x12345678>
+ e58:	00c5a023          	sw	a2,0(a1) # ff000000 <.text+0xff000000>
+ e5c:	0005a683          	lw	a3,0(a1)
+ e60:	00d64533          	xor	a0,a2,a3
+ e64:	00c5a0a3          	sw	a2,1(a1)
+ e68:	0005a683          	lw	a3,0(a1)
+ e6c:	00d64533          	xor	a0,a2,a3
+ e70:	00c5a123          	sw	a2,2(a1)
+ e74:	0005a683          	lw	a3,0(a1)
+ e78:	00d64533          	xor	a0,a2,a3
+ e7c:	00c5a1a3          	sw	a2,3(a1)
+ e80:	0005a683          	lw	a3,0(a1)
+ e84:	00d64533          	xor	a0,a2,a3
+ e88:	691a9637          	lui	a2,0x691a9
+ e8c:	18d60613          	addi	a2,a2,397 # 691a918d <.text+0x691a918d>
+ e90:	00c5a023          	sw	a2,0(a1)
+ e94:	0005a683          	lw	a3,0(a1)
+ e98:	00d64533          	xor	a0,a2,a3
+ e9c:	00c5a0a3          	sw	a2,1(a1)
+ ea0:	0005a683          	lw	a3,0(a1)
+ ea4:	00d64533          	xor	a0,a2,a3
+ ea8:	00c5a123          	sw	a2,2(a1)
+ eac:	0005a683          	lw	a3,0(a1)
+ eb0:	00d64533          	xor	a0,a2,a3
+ eb4:	00c5a1a3          	sw	a2,3(a1)
+ eb8:	0005a683          	lw	a3,0(a1)
+ ebc:	00d64533          	xor	a0,a2,a3
+ ec0:	55555637          	lui	a2,0x55555
+ ec4:	55560613          	addi	a2,a2,1365 # 55555555 <.text+0x55555555>
+ ec8:	00c5a023          	sw	a2,0(a1)
+ ecc:	00002637          	lui	a2,0x2
+ ed0:	22260613          	addi	a2,a2,546 # 2222 <.text+0x2222>
+ ed4:	00c59023          	sh	a2,0(a1)
+ ed8:	0005a683          	lw	a3,0(a1)
+ edc:	55552737          	lui	a4,0x55552
+ ee0:	22270713          	addi	a4,a4,546 # 55552222 <.text+0x55552222>
+ ee4:	00e6c533          	xor	a0,a3,a4
+ ee8:	00c590a3          	sh	a2,1(a1)
+ eec:	0005a683          	lw	a3,0(a1)
+ ef0:	00e6c533          	xor	a0,a3,a4
+ ef4:	11110637          	lui	a2,0x11110
+ ef8:	41065613          	srai	a2,a2,0x10
+ efc:	00c59123          	sh	a2,2(a1)
+ f00:	0005a683          	lw	a3,0(a1)
+ f04:	11112737          	lui	a4,0x11112
+ f08:	22270713          	addi	a4,a4,546 # 11112222 <.text+0x11112222>
+ f0c:	00e6c533          	xor	a0,a3,a4
+ f10:	00c591a3          	sh	a2,3(a1)
+ f14:	0005a683          	lw	a3,0(a1)
+ f18:	00e6c533          	xor	a0,a3,a4
+ f1c:	00000613          	li	a2,0
+ f20:	00c5a023          	sw	a2,0(a1)
+ f24:	01100613          	li	a2,17
+ f28:	00c58023          	sb	a2,0(a1)
+ f2c:	0005a683          	lw	a3,0(a1)
+ f30:	01100713          	li	a4,17
+ f34:	00e6c533          	xor	a0,a3,a4
+ f38:	02200613          	li	a2,34
+ f3c:	00c580a3          	sb	a2,1(a1)
+ f40:	0005a683          	lw	a3,0(a1)
+ f44:	00002737          	lui	a4,0x2
+ f48:	21170713          	addi	a4,a4,529 # 2211 <.text+0x2211>
+ f4c:	00e6c533          	xor	a0,a3,a4
+ f50:	03300613          	li	a2,51
+ f54:	00c58123          	sb	a2,2(a1)
+ f58:	0005a683          	lw	a3,0(a1)
+ f5c:	00332737          	lui	a4,0x332
+ f60:	21170713          	addi	a4,a4,529 # 332211 <.text+0x332211>
+ f64:	00e6c533          	xor	a0,a3,a4
+ f68:	04400613          	li	a2,68
+ f6c:	00c581a3          	sb	a2,3(a1)
+ f70:	0005a683          	lw	a3,0(a1)
+ f74:	44332737          	lui	a4,0x44332
+ f78:	21170713          	addi	a4,a4,529 # 44332211 <.text+0x44332211>
+ f7c:	00e6c533          	xor	a0,a3,a4

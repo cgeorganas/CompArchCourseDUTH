@@ -13,10 +13,8 @@ module data_mem(
 	output	logic	[31:0]	DM_mem_dout
 );
 
-logic [31:0] b_addr, h_addr, w_addr;
-assign b_addr = MEM_mem_addr;
-assign h_addr = {MEM_mem_addr[31:1], 1'b0};
-assign w_addr = {MEM_mem_addr[31:2], 2'b0};
+logic [29:0] addr;
+assign addr = MEM_mem_addr[31:2];
 
 logic [31:0] memory [(`MEM_32BIT_LINES-1):0];
 
@@ -28,13 +26,25 @@ always_ff @(posedge clk or posedge rst) begin
 	end
 	else begin
 		case (MEM_mem_cmd)
-			`MEM_SB:	memory[b_addr][7:0]		<= MEM_mem_din[7:0];
-			`MEM_SH:	memory[h_addr][15:0]	<= MEM_mem_din[15:0];
-			`MEM_SW:	memory[w_addr]			<= MEM_mem_din;
+			`MEM_SW: 			memory[addr][31:0]	<= MEM_mem_din[31:0];
+			`MEM_SH: begin
+				case(MEM_mem_addr[1])
+					1'b1:		memory[addr][31:16]	<= MEM_mem_din[15:0];
+					1'b0:		memory[addr][15:0]	<= MEM_mem_din[15:0];
+				endcase
+			end
+			`MEM_SB: begin
+				case(MEM_mem_addr[1:0])
+					2'b11:		memory[addr][31:24]	<= MEM_mem_din[7:0];
+					2'b10:		memory[addr][23:16]	<= MEM_mem_din[7:0];
+					2'b01:		memory[addr][15:8]	<= MEM_mem_din[7:0];
+					2'b00:		memory[addr][7:0]	<= MEM_mem_din[7:0];
+				endcase
+			end
 		endcase
 	end
 end
 
-assign DM_mem_dout = memory[w_addr];
+assign DM_mem_dout = memory[addr];
 
 endmodule
