@@ -65,9 +65,15 @@
 `define SLTI_INST				3'h2
 `define SLTIU_INST				3'h3
 `define JALR_INST				3'h0
+`define LB_INST					3'h0
+`define LH_INST					3'h1
 `define LW_INST					3'h2
+`define LBU_INST				3'h4
+`define LHU_INST				3'h5
 
 //{funct3}, S-TYPE
+`define SB_INST					3'h0
+`define SH_INST					3'h1
 `define SW_INST					3'h2
 
 //{funct3}, B-TYPE
@@ -113,12 +119,12 @@
 `define ALU_REMU				5'h11
 
 // Memory bus commands control signals
-`define	BUS_NONE				2'b00
-`define	BUS_LOAD				2'b01
-`define	BUS_STORE				2'b10
-`define	BUS_NA					2'b11
-
-// WB commands control signals
-`define	WB_SEL_NONE				2'b00
-`define	WB_SEL_ALU				2'b01
-`define	WB_SEL_DOUT				2'b10
+`define MEM_LB					4'b0_000
+`define MEM_LH					4'b0_001
+`define MEM_LW					4'b0_010
+`define MEM_LBU					4'b0_100
+`define MEM_LHU					4'b0_101
+`define MEM_NONE				4'b0_111
+`define MEM_SB					4'b1_000
+`define MEM_SH					4'b1_100
+`define MEM_SW					4'b1_101

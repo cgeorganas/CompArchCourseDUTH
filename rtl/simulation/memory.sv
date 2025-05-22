@@ -6,13 +6,17 @@ module mem (
     input         clk,              // Memory clock
     input logic [31:0] proc2mem_addr,    // address for current command
     input logic [31:0] proc2mem_data,    // address for current command
-    input logic [1:0]   proc2mem_command, // `BUS_NONE `BUS_LOAD or `BUS_STORE
+    input logic [3:0]   proc2mem_command,
 
     output logic  [3:0] mem2proc_response,// 0 = can't accept, other=tag of transaction
     output logic [31:0] mem2proc_data,    // data resulting from a load
     output logic  [3:0] mem2proc_tag     // 0 = no value, other=tag of transaction
   );
 
+
+  logic ld_cmd, st_cmd;
+  assign ld_cmd = ((proc2mem_command==`MEM_LB)||(proc2mem_command==`MEM_LH)||(proc2mem_command==`MEM_LW)||(proc2mem_command==`MEM_LBU)||(proc2mem_command==`MEM_LHU));
+  assign st_cmd = ((proc2mem_command==`MEM_SB)||(proc2mem_command==`MEM_SH)||(proc2mem_command==`MEM_SW));
 
   logic [31:0] next_mem2proc_data;
   logic  [3:0] next_mem2proc_response, next_mem2proc_tag;
@@ -35,8 +39,7 @@ module mem (
     next_mem2proc_response = 4'b0;
     next_mem2proc_data     = 32'bx;
     bus_filled             = 1'b0;
-    acquire_tag            = ((proc2mem_command == `BUS_LOAD) ||
-                              (proc2mem_command == `BUS_STORE)) && valid_address;
+    acquire_tag            = (ld_cmd||st_cmd) && valid_address;
 
     for(int i=1;i<=`NUM_MEM_TAGS;i=i+1) begin
       if(cycles_left[i]>16'd0) begin
@@ -49,7 +52,7 @@ module mem (
                                   // though this could be done via a non-number
                                   // definition for this macro
 
-        if(proc2mem_command == `BUS_LOAD) begin
+        if(ld_cmd) begin
           waiting_for_bus[i] = 1'b1;
           loaded_data[i]     = unified_memory[proc2mem_addr[31:2]];
         end else begin

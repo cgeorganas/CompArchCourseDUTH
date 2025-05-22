@@ -11,7 +11,7 @@ logic	[31:0]	IM_inst;
 logic	[31:0]	DM_mem_dout;
 logic	[31:0]	IF_pc;
 logic	[31:0]	MEM_mem_addr;
-logic	[1:0]	MEM_mem_cmd;
+logic	[3:0]	MEM_mem_cmd;
 logic	[31:0]	MEM_mem_din;
 
 processor processor_0(
@@ -28,8 +28,8 @@ processor processor_0(
 logic	[31:0]	TB_im_din;
 assign	TB_im_din=32'h0;
 
-logic	[1:0]	TB_im_mem_cmd;
-assign	TB_im_mem_cmd=`BUS_LOAD;
+logic	[3:0]	TB_im_mem_cmd;
+assign	TB_im_mem_cmd=`MEM_LW;
 
 logic	[3:0]	TB_im_mem2proc_response;
 logic	[3:0]	TB_im_mem2proc_tag;

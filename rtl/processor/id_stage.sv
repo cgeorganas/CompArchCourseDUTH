@@ -19,7 +19,7 @@ module id_stage(
 	output	logic	[5:0]	ID_alu_sel,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
-	output	logic	[1:0]	ID_mem_cmd,
+	output	logic	[3:0]	ID_mem_cmd,
 	output	logic	[4:0]	ID_rd
 );
 
@@ -124,10 +124,24 @@ always_comb begin
 		default:										ID_vld = `FALSE;
 	endcase
 
+	ID_mem_cmd = `MEM_NONE;
 	case (opcode)
-		`I_LD_TYPE:										ID_mem_cmd = `BUS_LOAD;
-		`S_TYPE:										ID_mem_cmd = `BUS_STORE;
-		default:										ID_mem_cmd = `BUS_NONE;
+		`I_LD_TYPE: begin
+			case (funct3)
+				`LB_INST:								ID_mem_cmd = `MEM_LB;
+				`LH_INST:								ID_mem_cmd = `MEM_LH;
+				`LW_INST:								ID_mem_cmd = `MEM_LW;
+				`LBU_INST:								ID_mem_cmd = `MEM_LBU;
+				`LHU_INST:								ID_mem_cmd = `MEM_LHU;
+			endcase
+		end
+		`S_TYPE: begin
+			case (funct3)
+				`SB_INST:								ID_mem_cmd = `MEM_SB;
+				`SH_INST:								ID_mem_cmd = `MEM_SH;
+				`SW_INST:								ID_mem_cmd = `MEM_SW;
+			endcase
+		end
 	endcase
 
 	case (opcode)

@@ -17,7 +17,7 @@ module processor(
 
 	// Outputs from MEM stage
 	output	logic	[31:0]	MEM_mem_addr,
-	output	logic	[1:0]	MEM_mem_cmd,
+	output	logic	[3:0]	MEM_mem_cmd,
 	output	logic	[31:0]	MEM_mem_din
 );
 
@@ -46,7 +46,7 @@ logic	[5:0]	ID_alu_sel;
 logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
-logic	[1:0]	ID_mem_cmd;
+logic	[3:0]	ID_mem_cmd;
 logic	[4:0]	ID_rd;
 
 
@@ -60,7 +60,7 @@ logic	[5:0]	ID_EX_alu_sel;
 logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
-logic	[1:0]	ID_EX_mem_cmd;
+logic	[3:0]	ID_EX_mem_cmd;
 logic	[4:0]	ID_EX_rd;
 
 
@@ -77,13 +77,13 @@ logic	[31:0]	EX_MEM_mem_din;
 logic	[31:0]	EX_MEM_alu_res;
 logic			EX_MEM_vld;
 
-logic	[1:0]	EX_MEM_mem_cmd;
+logic	[3:0]	EX_MEM_mem_cmd;
 logic	[4:0]	EX_MEM_rd;
 
 
 
 // Outputs from MEM stage
-// logic	[1:0]	MEM_mem_cmd;
+// logic	[3:0]	MEM_mem_cmd;
 // logic	[31:0]	MEM_mem_addr;
 // logic	[31:0]	MEM_mem_din;
 
@@ -185,7 +185,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_alu_sel	<= 6'h0;
 		ID_EX_alu_func	<= `ALU_ADD;
 		ID_EX_vld		<= `FALSE;
-		ID_EX_mem_cmd	<= `BUS_NONE;
+		ID_EX_mem_cmd	<= `MEM_NONE;
 		ID_EX_rd		<= `ZERO_REG;
 	end
 	else if (ST_id_ex_en) begin
@@ -231,7 +231,7 @@ always_ff @(posedge clk or posedge rst) begin
 		EX_MEM_mem_din	<= 32'h0;
 		EX_MEM_alu_res	<= 32'h0;
 		EX_MEM_vld		<= `FALSE;
-		EX_MEM_mem_cmd	<= `BUS_NONE;
+		EX_MEM_mem_cmd	<=`MEM_NONE;
 		EX_MEM_rd		<= `ZERO_REG;
 	end
 	else if (ST_ex_mem_en) begin
