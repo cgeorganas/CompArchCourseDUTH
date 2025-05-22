@@ -20,6 +20,8 @@ module mem_stage(
 	output	logic			MEM_vld
 );
 
+logic [7:0] dout_byte;
+logic [15:0] dout_hw;
 
 always_comb begin
 	
@@ -34,8 +36,22 @@ always_comb begin
 
 	MEM_mem_cmd = EX_MEM_vld ? EX_MEM_mem_cmd : `MEM_NONE;
 
+	case (MEM_mem_addr[1])
+		1'b1:											dout_hw = DM_mem_dout[31:16];
+		default:										dout_hw = DM_mem_dout[15:0];
+	endcase
+
+	case (MEM_mem_addr[0])
+		1'b1:											dout_byte = dout_hw[15:8];
+		default:										dout_byte = dout_hw[7:0];
+	endcase
+
 	case(MEM_mem_cmd)
-		`MEM_LB, `MEM_LH, `MEM_LW, `MEM_LBU, `MEM_LHU:	MEM_data = DM_mem_dout;
+		`MEM_LB:										MEM_data = {{24{dout_byte[7]}}, dout_byte};
+		`MEM_LH:										MEM_data = {{16{dout_hw[15]}}, dout_hw[15:0]};
+		`MEM_LW:										MEM_data = DM_mem_dout;
+		`MEM_LBU:										MEM_data = {24'h0, dout_byte};
+		`MEM_LHU:										MEM_data = {16'h0, dout_hw};
 		default:										MEM_data = EX_MEM_alu_res;
 	endcase
 
