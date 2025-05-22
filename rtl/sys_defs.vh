@@ -86,13 +86,12 @@
 
 //ALU operand selector
 `define SEL_RS					3'h0
-`define	SEL_PC					3'h1
-`define	SEL_IMM					3'h2
-`define	SEL_0					3'h3
-`define SEL_4					3'h4
-`define	SEL_F1					3'h5
-`define	SEL_F2					3'h6
-`define	SEL_F3					3'h7
+`define	SEL_IMM					3'h1
+`define	SEL_PC					3'h2
+`define	SEL_F1					3'h3
+`define	SEL_F2					3'h4
+`define	SEL_0					3'h5
+`define SEL_4					3'h6
 
 // Destination register select
 `define DEST_IS_REGC			1'b0
@@ -126,5 +125,5 @@
 `define MEM_LHU					4'b0_101
 `define MEM_NONE				4'b0_111
 `define MEM_SB					4'b1_000
-`define MEM_SH					4'b1_100
-`define MEM_SW					4'b1_101
+`define MEM_SH					4'b1_001
+`define MEM_SW					4'b1_010

@@ -46,51 +46,122 @@ assign funct3 = IF_ID_inst[14:12];
 
 always_comb begin
 
-	case (opcode)
-		`S_TYPE:										ID_imm = imm_s;
-		`B_TYPE:										ID_imm = imm_b;
-		`J_TYPE:										ID_imm = imm_j;
-		`U_LD_TYPE, `U_AUIPC_TYPE:						ID_imm = imm_u;
-		default:										ID_imm = imm_i;
-	endcase
+	case(opcode)
 
-	case (opcode)
-		`R_TYPE,`S_TYPE, `B_TYPE, `I_ARITH_TYPE, `I_LD_TYPE: begin
-			case (ID_rs1)
-				`ZERO_REG:								opa_sel = `SEL_0;
-				ID_EX_rd:								opa_sel = `SEL_F1;
-				EX_MEM_rd:								opa_sel = `SEL_F2;
-				default:								opa_sel = `SEL_RS;
-			endcase
+		`R_TYPE: begin
+			ID_imm		= 32'h0;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_RS;
+			opb_sel		= `SEL_RS;
+			din_sel		= `SEL_0;
 		end
-		`I_JAL_TYPE, `J_TYPE, `U_AUIPC_TYPE:			opa_sel = `SEL_PC;
-		default:										opa_sel = `SEL_0;
-	endcase
 
-	case (opcode)
-		`R_TYPE, `B_TYPE: begin
-			case (ID_rs2)
-				`ZERO_REG:								opb_sel = `SEL_0;
-				ID_EX_rd:								opb_sel = `SEL_F1;
-				EX_MEM_rd:								opb_sel = `SEL_F2;
-				default:								opb_sel = `SEL_RS;
-			endcase
+		`I_ARITH_TYPE: begin
+			ID_imm		= imm_i;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_RS;
+			opb_sel		= `SEL_IMM;
+			din_sel		= `SEL_0;
 		end
-		`I_ARITH_TYPE, `I_LD_TYPE, `S_TYPE:				opb_sel = `SEL_IMM;
-		`U_LD_TYPE, `U_AUIPC_TYPE:						opb_sel = `SEL_IMM;
-		default:										opb_sel = `SEL_4;
+
+		`I_LD_TYPE: begin
+			ID_imm		= imm_i;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= {1'b0, funct3};
+			opa_sel		= `SEL_RS;
+			opb_sel		= `SEL_IMM;
+			din_sel		= `SEL_0;
+		end
+
+		`I_JAL_TYPE: begin
+			ID_imm		= imm_j;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_PC;
+			opb_sel		= `SEL_0;
+			din_sel		= `SEL_0;
+		end
+
+		`S_TYPE: begin
+			ID_imm		= imm_s;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= `ZERO_REG;
+			ID_mem_cmd	= {1'b1, funct3};
+			opa_sel		= `SEL_RS;
+			opb_sel		= `SEL_IMM;
+			din_sel		= `SEL_RS;
+		end
+
+		`B_TYPE: begin
+			ID_imm		= imm_b;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= `ZERO_REG;
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_RS;
+			opb_sel		= `SEL_RS;
+			din_sel		= `SEL_0;
+		end
+
+		`J_TYPE: begin
+			ID_imm		= imm_j;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_PC;
+			opb_sel		= `SEL_0;
+			din_sel		= `SEL_0;
+		end
+
+		`U_LD_TYPE: begin
+			ID_imm		= imm_u;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_0;
+			opb_sel		= `SEL_IMM;
+			din_sel		= `SEL_0;
+		end
+
+		`U_AUIPC_TYPE: begin
+			ID_imm		= imm_u;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= IF_ID_inst[11:7];
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_PC;
+			opb_sel		= `SEL_IMM;
+			din_sel		= `SEL_0;
+		end
+
+		`I_BREAK_TYPE: begin
+			ID_imm		= 32'h0;
+			ID_vld		= IF_ID_vld;
+			ID_rd		= `ZERO_REG;
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_0;
+			opb_sel		= `SEL_0;
+			din_sel		= `SEL_0;
+		end
+
+		default: begin
+			ID_imm		= 32'h0;
+			ID_vld		= `FALSE;
+			ID_rd		= `ZERO_REG;
+			ID_mem_cmd	= `MEM_NONE;
+			opa_sel		= `SEL_0;
+			opb_sel		= `SEL_0;
+			din_sel		= `SEL_0;
+		end
+
 	endcase
 
-	// This will run for all instructions but it doesn't matter
-	case (ID_rs2)
-		`ZERO_REG:										din_sel = `SEL_0;
-		ID_EX_rd:										din_sel = `SEL_F1;
-		EX_MEM_rd:										din_sel = `SEL_F2;
-		default:										din_sel = `SEL_RS;
-	endcase
 
 	ID_alu_func = `ALU_ADD;
-
 	if (opcode==`R_TYPE) begin
 		case({funct3, funct7})
 			`ADD_INST:									ID_alu_func = `ALU_ADD;
@@ -110,7 +181,6 @@ always_comb begin
 			default:									ID_vld = `FALSE;
 		endcase
 	end
-
 	if (opcode==`I_ARITH_TYPE) begin
 		case(funct3)
 			`ADDI_INST:									ID_alu_func = `ALU_ADD;
@@ -125,37 +195,29 @@ always_comb begin
 		endcase
 	end
 
-	case (opcode)
-		`R_TYPE, `I_ARITH_TYPE, `I_LD_TYPE:				ID_vld = IF_ID_vld;
-		`I_JAL_TYPE, `S_TYPE, `B_TYPE, `J_TYPE:			ID_vld = IF_ID_vld;
-		`U_LD_TYPE, `U_AUIPC_TYPE, `I_BREAK_TYPE:		ID_vld = IF_ID_vld;
-		default:										ID_vld = `FALSE;
-	endcase
 
-	ID_mem_cmd = `MEM_NONE;
-	case (opcode)
-		`I_LD_TYPE: begin
-			case (funct3)
-				`LB_INST:								ID_mem_cmd = `MEM_LB;
-				`LH_INST:								ID_mem_cmd = `MEM_LH;
-				`LW_INST:								ID_mem_cmd = `MEM_LW;
-				`LBU_INST:								ID_mem_cmd = `MEM_LBU;
-				`LHU_INST:								ID_mem_cmd = `MEM_LHU;
-			endcase
-		end
-		`S_TYPE: begin
-			case (funct3)
-				`SB_INST:								ID_mem_cmd = `MEM_SB;
-				`SH_INST:								ID_mem_cmd = `MEM_SH;
-				`SW_INST:								ID_mem_cmd = `MEM_SW;
-			endcase
-		end
-	endcase
-
-	case (opcode)
-		`S_TYPE, `B_TYPE, `I_BREAK_TYPE:				ID_rd = `ZERO_REG;
-		default:										ID_rd = IF_ID_inst[11:7];
-	endcase
+	// Forwarding overrides
+	if (opa_sel==`SEL_RS) begin
+		case (ID_rs1)
+			`ZERO_REG:	opa_sel = `SEL_0;
+			ID_EX_rd:	opa_sel = `SEL_F1;
+			EX_MEM_rd:	opa_sel = `SEL_F2;
+		endcase
+	end
+	if (opb_sel==`SEL_RS) begin
+		case (ID_rs2)
+			`ZERO_REG:	opb_sel = `SEL_0;
+			ID_EX_rd:	opb_sel = `SEL_F1;
+			EX_MEM_rd:	opb_sel = `SEL_F2;
+		endcase
+	end
+	if (din_sel==`SEL_RS) begin
+		case (ID_rs2)
+			`ZERO_REG:	din_sel = `SEL_0;
+			ID_EX_rd:	din_sel = `SEL_F1;
+			EX_MEM_rd:	din_sel = `SEL_F2;
+		endcase
+	end
 
 end
 
