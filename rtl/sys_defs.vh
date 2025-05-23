@@ -79,6 +79,8 @@
 //{funct3}, B-TYPE
 `define BEQ_INST				3'h0
 `define BNE_INST				3'h1
+`define DONT_BRANCH				3'h2
+`define UNC_BRANCH				3'h3
 `define BLT_INST				3'h4
 `define BGE_INST				3'h5
 `define BLTU_INST				3'h6

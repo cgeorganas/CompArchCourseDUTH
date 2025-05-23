@@ -16,7 +16,7 @@ module id_stage(
 	output	logic	[4:0]	ID_rs2,
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
-	output	logic	[8:0]	ID_mux_sel,
+	output	logic	[11:0]	ID_mux_sel,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
@@ -27,8 +27,8 @@ assign ID_rs1 = IF_ID_inst[19:15];
 assign ID_rs2 = IF_ID_inst[24:20];
 assign ID_pc = IF_ID_pc;
 
-logic [2:0] opa_sel, opb_sel, din_sel;
-assign ID_mux_sel = {opa_sel, opb_sel, din_sel};
+logic [2:0] br_ctrl, opa_sel, opb_sel, din_sel;
+assign ID_mux_sel = {br_ctrl, opa_sel, opb_sel, din_sel};
 
 logic [31:0] imm_i, imm_s, imm_b, imm_j, imm_u;
 assign imm_i = {{20{IF_ID_inst[31]}}, IF_ID_inst[31:20]};
@@ -56,6 +56,7 @@ always_comb begin
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_ARITH_TYPE: begin
@@ -66,6 +67,7 @@ always_comb begin
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_LD_TYPE: begin
@@ -76,6 +78,7 @@ always_comb begin
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_JAL_TYPE: begin
@@ -86,6 +89,7 @@ always_comb begin
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_0;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`S_TYPE: begin
@@ -96,6 +100,7 @@ always_comb begin
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
 			din_sel		= `SEL_RS;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`B_TYPE: begin
@@ -106,6 +111,7 @@ always_comb begin
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
 			din_sel		= `SEL_0;
+			br_ctrl		= funct3;
 		end
 
 		`J_TYPE: begin
@@ -116,6 +122,7 @@ always_comb begin
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_0;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`U_LD_TYPE: begin
@@ -126,6 +133,7 @@ always_comb begin
 			opa_sel		= `SEL_0;
 			opb_sel		= `SEL_IMM;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`U_AUIPC_TYPE: begin
@@ -136,6 +144,7 @@ always_comb begin
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_IMM;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_BREAK_TYPE: begin
@@ -146,6 +155,7 @@ always_comb begin
 			opa_sel		= `SEL_0;
 			opb_sel		= `SEL_0;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 		default: begin
@@ -156,45 +166,60 @@ always_comb begin
 			opa_sel		= `SEL_0;
 			opb_sel		= `SEL_0;
 			din_sel		= `SEL_0;
+			br_ctrl		= `DONT_BRANCH;
 		end
 
 	endcase
 
 
 	ID_alu_func = `ALU_ADD;
-	if (opcode==`R_TYPE) begin
-		case({funct3, funct7})
-			`ADD_INST:									ID_alu_func = `ALU_ADD;
-			`SUB_INST:									ID_alu_func = `ALU_SUB;
-			`XOR_INST:									ID_alu_func = `ALU_XOR;
-			`OR_INST:									ID_alu_func = `ALU_OR;
-			`AND_INST:									ID_alu_func = `ALU_AND;
-			`SLL_INST:									ID_alu_func = `ALU_SLL;
-			`SRL_INST:									ID_alu_func = `ALU_SRL;
-			`SRA_INST:									ID_alu_func = `ALU_SRA;
-			`SLT_INST:									ID_alu_func = `ALU_SLT;
-			`SLTU_INST:									ID_alu_func = `ALU_SLTU;
-			`MUL_INST:									ID_alu_func = `ALU_MUL;
-			`MULH_INST:									ID_alu_func = `ALU_MULH;
-			`MULHSU_INST:								ID_alu_func = `ALU_MULHSU;
-			`MULHU_INST:								ID_alu_func = `ALU_MULHU;
-			default:									ID_vld = `FALSE;
-		endcase
-	end
-	if (opcode==`I_ARITH_TYPE) begin
-		case(funct3)
-			`ADDI_INST:									ID_alu_func = `ALU_ADD;
-			`XORI_INST:									ID_alu_func = `ALU_XOR;
-			`ORI_INST:									ID_alu_func = `ALU_OR;
-			`ANDI_INST:									ID_alu_func = `ALU_AND;
-			`SLLI_INST:									ID_alu_func = `ALU_SLL;
-			`SRLI_INST, `SRAI_INST:						ID_alu_func = IF_ID_inst[30] ? `ALU_SRA : `ALU_SRL;
-			`SLTI_INST:									ID_alu_func = `ALU_SLT;
-			`SLTIU_INST:								ID_alu_func = `ALU_SLTU;
-			default:									ID_vld = `FALSE;
-		endcase
-	end
+	case(opcode)
+	
+		`R_TYPE: begin
+			case({funct3, funct7})
+				`ADD_INST:									ID_alu_func = `ALU_ADD;
+				`SUB_INST:									ID_alu_func = `ALU_SUB;
+				`XOR_INST:									ID_alu_func = `ALU_XOR;
+				`OR_INST:									ID_alu_func = `ALU_OR;
+				`AND_INST:									ID_alu_func = `ALU_AND;
+				`SLL_INST:									ID_alu_func = `ALU_SLL;
+				`SRL_INST:									ID_alu_func = `ALU_SRL;
+				`SRA_INST:									ID_alu_func = `ALU_SRA;
+				`SLT_INST:									ID_alu_func = `ALU_SLT;
+				`SLTU_INST:									ID_alu_func = `ALU_SLTU;
+				`MUL_INST:									ID_alu_func = `ALU_MUL;
+				`MULH_INST:									ID_alu_func = `ALU_MULH;
+				`MULHSU_INST:								ID_alu_func = `ALU_MULHSU;
+				`MULHU_INST:								ID_alu_func = `ALU_MULHU;
+				default:									ID_vld = `FALSE;
+			endcase
+		end
 
+		`I_ARITH_TYPE: begin
+			case(funct3)
+				`ADDI_INST:									ID_alu_func = `ALU_ADD;
+				`XORI_INST:									ID_alu_func = `ALU_XOR;
+				`ORI_INST:									ID_alu_func = `ALU_OR;
+				`ANDI_INST:									ID_alu_func = `ALU_AND;
+				`SLLI_INST:									ID_alu_func = `ALU_SLL;
+				`SRLI_INST, `SRAI_INST:						ID_alu_func = IF_ID_inst[30] ? `ALU_SRA : `ALU_SRL;
+				`SLTI_INST:									ID_alu_func = `ALU_SLT;
+				`SLTIU_INST:								ID_alu_func = `ALU_SLTU;
+				default:									ID_vld = `FALSE;
+			endcase
+		end
+
+		`B_TYPE: begin
+			case(funct3)
+				`BEQ_INST, `BNE_INST:						ID_alu_func = `ALU_XOR;
+				`BLT_INST, `BGE_INST:						ID_alu_func = `ALU_SLT;
+				`BLTU_INST, `BGEU_INST:						ID_alu_func = `ALU_SLTU;
+				`DONT_BRANCH, `UNC_BRANCH:					ID_alu_func = `ALU_ADD;
+				default:									ID_vld = `FALSE;
+			endcase
+		end
+
+	endcase
 
 	// Forwarding overrides
 	if (opa_sel==`SEL_RS) begin

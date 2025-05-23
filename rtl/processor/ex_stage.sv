@@ -10,7 +10,7 @@ module ex_stage(
 	input	logic	[31:0]	RF_rs2_data,
 	input	logic	[31:0]	ID_EX_pc,
 	input	logic	[31:0]	ID_EX_imm,
-	input	logic	[8:0]	ID_EX_mux_sel,
+	input	logic	[11:0]	ID_EX_mux_sel,
 	input	logic	[4:0]	ID_EX_alu_func,
 	input	logic			ID_EX_vld,
 	input 	logic	[31:0]	MEM_data,
@@ -73,8 +73,8 @@ always_comb begin
 		`ALU_SLL:		EX_alu_res = opa << opb[4:0];
 		`ALU_SRL:		EX_alu_res = opa >> opb[4:0];
 		`ALU_SRA:		EX_alu_res = $signed(opa) >>> opb[4:0]; 
-		`ALU_SLT:		EX_alu_res = {31'd0, ($signed(opa)< $signed(opb))};
-		`ALU_SLTU:		EX_alu_res = {31'd0, (opa < opb)};
+		`ALU_SLT:		EX_alu_res = {31'h0, ($signed(opa)< $signed(opb))};
+		`ALU_SLTU:		EX_alu_res = {31'h0, (opa < opb)};
 		`ALU_MUL:		EX_alu_res = mult_result[31:0];
 		`ALU_MULH:		EX_alu_res = mult_result[63:32];
 		`ALU_MULHSU:	EX_alu_res = mult_result[63:32];
@@ -84,6 +84,17 @@ always_comb begin
 		// `ALU_REM:		EX_alu_res = 32'hbaadbeef;
 		// `ALU_REMU:		EX_alu_res = 32'hbaadbeef;
 		default:		EX_vld = `FALSE;
+	endcase
+end
+
+// Branch control
+logic take_branch;
+always_comb begin
+	case(ID_EX_mux_sel[11:9])
+		`BEQ_INST, `BNE_INST:							take_branch = ~((|EX_alu_res)^(ID_EX_mux_sel[9]));
+		`BLT_INST, `BGE_INST, `BLTU_INST, `BGEU_INST:	take_branch = (EX_alu_res[0])^(ID_EX_mux_sel[9]);
+		`UNC_BRANCH:									take_branch = `TRUE;
+		default:										take_branch = `FALSE;
 	endcase
 end
 
