@@ -69,7 +69,8 @@ logic	[4:0]	ID_EX_rd;
 logic	[31:0]	EX_mem_din;
 logic	[31:0]	EX_alu_res;
 logic			EX_vld;
-
+logic	[31:0]	EX_br_pc;
+logic			EX_take_br;
 
 
 // Outputs from EX/MEM pipeline register
@@ -127,6 +128,8 @@ if_stage if_stage_0(
 
 	.IF_ID_pc			(IF_ID_pc),
 	.IM_inst			(IM_inst),
+	.EX_br_pc			(EX_br_pc),
+	.EX_take_br			(EX_take_br),
 
 	.IF_pc				(IF_pc),
 	.IF_inst			(IF_inst),
@@ -220,7 +223,9 @@ ex_stage ex_stage_0(
 
 	.EX_mem_din			(EX_mem_din),
 	.EX_alu_res			(EX_alu_res),
-	.EX_vld				(EX_vld)
+	.EX_vld				(EX_vld),
+	.EX_br_pc			(EX_br_pc),
+	.EX_take_br			(EX_take_br)
 );
 
 
