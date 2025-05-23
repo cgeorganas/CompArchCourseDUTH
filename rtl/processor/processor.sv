@@ -118,6 +118,7 @@ logic			ST_if_id_en;
 logic			ST_id_ex_en;
 logic			ST_ex_mem_en;
 logic			ST_mem_wb_en;
+logic			ST_br_stall;
 
 
 
@@ -130,6 +131,7 @@ if_stage if_stage_0(
 	.IM_inst			(IM_inst),
 	.EX_br_pc			(EX_br_pc),
 	.EX_take_br			(EX_take_br),
+	.ST_br_stall		(ST_br_stall),
 
 	.IF_pc				(IF_pc),
 	.IF_inst			(IF_inst),
@@ -323,15 +325,13 @@ stall stall_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.ID_rs1				(ID_rs1),
-	.ID_rs2				(ID_rs2),
-	.ID_EX_rd			(ID_EX_rd),
-	.ID_EX_mem_cmd		(ID_EX_mem_cmd),
+	.ID_mux_sel			(ID_mux_sel),
 
 	.ST_if_id_en		(ST_if_id_en),
 	.ST_id_ex_en		(ST_id_ex_en),
 	.ST_ex_mem_en		(ST_ex_mem_en),
-	.ST_mem_wb_en		(ST_mem_wb_en)
+	.ST_mem_wb_en		(ST_mem_wb_en),
+	.ST_br_stall		(ST_br_stall)
 );
 
 endmodule

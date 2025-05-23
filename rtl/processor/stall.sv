@@ -6,27 +6,20 @@ module stall(
 	input	logic			clk,
 	input	logic			rst,
 
-	input	logic	[4:0]	ID_rs1,
-	input	logic	[4:0]	ID_rs2,
-	input	logic	[4:0]	ID_EX_rd,
-	input	logic	[3:0]	ID_EX_mem_cmd,
+	input	logic	[11:0]	ID_mux_sel,
 
 	output logic			ST_if_id_en,
 	output logic			ST_id_ex_en,
 	output logic			ST_ex_mem_en,
-	output logic			ST_mem_wb_en
+	output logic			ST_mem_wb_en,
+	output logic			ST_br_stall
 );
 
-// This logic detects data-memory read commands that are in the pipeline
-// If the memory data needs to be forwarded, but hasn't been read yet, the pipeline will stall
-logic rs_match, mem_stall;
-assign rs_match = (ID_rs1==ID_EX_rd)||(ID_rs2==ID_EX_rd);
-assign mem_stall = (rs_match)&&(ID_EX_rd!=`ZERO_REG)&&(`FALSE);
-// assign mem_stall = (rs_match)&&(ID_EX_rd!=`ZERO_REG)&&(ID_EX_mem_cmd==`BUS_LOAD);
-
-assign ST_if_id_en = ~mem_stall;
+assign ST_if_id_en = `TRUE;
 assign ST_id_ex_en = `TRUE;
 assign ST_ex_mem_en = `TRUE;
 assign ST_mem_wb_en = `TRUE;
+
+assign ST_br_stall = (ID_mux_sel[11:9]!=`DONT_BRANCH);
 
 endmodule

@@ -6,7 +6,10 @@ Disassembly of section .text:
 
 00000000 <label>:
    0:	00150513          	addi	a0,a0,1
-   4:	fec60ee3          	beq	a2,a2,0 <label>
-   8:	00000013          	nop
-   c:	00000013          	nop
-  10:	00000013          	nop
+   4:	00000593          	li	a1,0
+   8:	fec60ce3          	beq	a2,a2,0 <label>
+   c:	00100593          	li	a1,1
+  10:	00200593          	li	a1,2
+  14:	00300593          	li	a1,3
+  18:	00400593          	li	a1,4
+  1c:	00500593          	li	a1,5
