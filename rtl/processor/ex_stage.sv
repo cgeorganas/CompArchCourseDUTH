@@ -10,7 +10,7 @@ module ex_stage(
 	input	logic	[31:0]	RF_rs2_data,
 	input	logic	[31:0]	ID_EX_pc,
 	input	logic	[31:0]	ID_EX_imm,
-	input	logic	[11:0]	ID_EX_mux_sel,
+	input	logic	[12:0]	ID_EX_mux_sel,
 	input	logic	[4:0]	ID_EX_alu_func,
 	input	logic			ID_EX_vld,
 	input 	logic	[31:0]	MEM_data,
@@ -23,32 +23,37 @@ module ex_stage(
 	output	logic			EX_take_br
 );
 
+//Forwarded data
+logic [31:0] rs1_data, rs2_data;
+always_comb begin
+	case(ID_EX_mux_sel[5:3])
+		`F1:		rs1_data = MEM_data;
+		`F2:		rs1_data = WB_data;
+		default:	rs1_data = RF_rs1_data;
+	endcase
+	case(ID_EX_mux_sel[2:0])
+		`F1:		rs2_data = MEM_data;
+		`F2:		rs2_data = WB_data;
+		default:	rs2_data = RF_rs2_data;
+	endcase
+end
 
 //Operand selection
 logic [31:0] opa, opb;
-
 always_comb begin
-	case(ID_EX_mux_sel[8:6])
-		`SEL_RS:	opa = RF_rs1_data;
+	case(ID_EX_mux_sel[9:8])
+		`SEL_RS:	opa = rs1_data;
 		`SEL_PC:	opa = ID_EX_pc;
-		`SEL_F1:	opa = MEM_data;
-		`SEL_F2:	opa = WB_data;
 		default:	opa = 32'h0000_0000;
 	endcase
-	case(ID_EX_mux_sel[5:3])
-		`SEL_RS:	opb = RF_rs2_data;
+	case(ID_EX_mux_sel[7:6])
+		`SEL_RS:	opb = rs2_data;
 		`SEL_IMM:	opb = ID_EX_imm;
-		`SEL_F1:	opb = MEM_data;
-		`SEL_F2:	opb = WB_data;
 		default:	opb = 32'h0000_0004;
 	endcase
-	case(ID_EX_mux_sel[2:0])
-		`SEL_RS:	EX_mem_din = RF_rs2_data;
-		`SEL_F1:	EX_mem_din = MEM_data;
-		`SEL_F2:	EX_mem_din = WB_data;
-		default:	EX_mem_din = 32'h0000_0000;
-	endcase
 end
+
+assign EX_mem_din = rs2_data;
 
 //Multiplier
 logic sign_opa, sign_opb;
@@ -90,11 +95,15 @@ always_comb begin
 end
 
 // Branch control
+logic [2:0] br_ctrl;
+assign br_ctrl = ID_EX_mux_sel[12:10];
+
 assign EX_br_pc = ID_EX_pc + ID_EX_imm;
+
 always_comb begin
-	case(ID_EX_mux_sel[11:9])
-		`BEQ_INST, `BNE_INST:							EX_take_br = ~((|EX_alu_res)^(ID_EX_mux_sel[9]));
-		`BLT_INST, `BGE_INST, `BLTU_INST, `BGEU_INST:	EX_take_br = (EX_alu_res[0])^(ID_EX_mux_sel[9]);
+	case(br_ctrl)
+		`BEQ_INST, `BNE_INST:							EX_take_br = ~((|EX_alu_res)^(br_ctrl[0]));
+		`BLT_INST, `BGE_INST, `BLTU_INST, `BGEU_INST:	EX_take_br = (EX_alu_res[0])^(br_ctrl[0]);
 		`UNC_BRANCH:									EX_take_br = `TRUE;
 		default:										EX_take_br = `FALSE;
 	endcase

@@ -42,7 +42,7 @@ logic	[4:0]	ID_rs1;
 logic	[4:0]	ID_rs2;
 logic	[31:0]	ID_pc;
 logic	[31:0]	ID_imm;
-logic	[11:0]	ID_mux_sel;
+logic	[12:0]	ID_mux_sel;
 logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
@@ -56,7 +56,7 @@ logic	[4:0]	ID_EX_rs1;
 logic	[4:0]	ID_EX_rs2;
 logic	[31:0]	ID_EX_pc;
 logic	[31:0]	ID_EX_imm;
-logic	[11:0]	ID_EX_mux_sel;
+logic	[12:0]	ID_EX_mux_sel;
 logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
@@ -187,7 +187,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_rs2		<= 5'h0;
 		ID_EX_pc		<= 32'h0;
 		ID_EX_imm		<= 32'h0;
-		ID_EX_mux_sel	<= {`DONT_BRANCH, `SEL_0, `SEL_0, `SEL_0};
+		ID_EX_mux_sel	<= {`DONT_BRANCH, `SEL_CONST, `SEL_CONST, `F0, `F0};
 		ID_EX_alu_func	<= `ALU_ADD;
 		ID_EX_vld		<= `FALSE;
 		ID_EX_mem_cmd	<= `MEM_NONE;

@@ -16,7 +16,7 @@ module id_stage(
 	output	logic	[4:0]	ID_rs2,
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
-	output	logic	[11:0]	ID_mux_sel,
+	output	logic	[12:0]	ID_mux_sel,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
@@ -27,8 +27,9 @@ assign ID_rs1 = IF_ID_inst[19:15];
 assign ID_rs2 = IF_ID_inst[24:20];
 assign ID_pc = IF_ID_pc;
 
-logic [2:0] br_ctrl, opa_sel, opb_sel, din_sel;
-assign ID_mux_sel = {br_ctrl, opa_sel, opb_sel, din_sel};
+logic [1:0] opa_sel, opb_sel;
+logic [2:0] br_ctrl, forw_rs1, forw_rs2;
+assign ID_mux_sel = {br_ctrl, opa_sel, opb_sel, forw_rs1, forw_rs2};
 
 logic [31:0] imm_i, imm_s, imm_b, imm_j, imm_u;
 assign imm_i = {{20{IF_ID_inst[31]}}, IF_ID_inst[31:20]};
@@ -55,7 +56,6 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
-			din_sel		= `SEL_0;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -66,7 +66,6 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			din_sel		= `SEL_0;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -77,7 +76,6 @@ always_comb begin
 			ID_mem_cmd	= {1'b0, funct3};
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			din_sel		= `SEL_0;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -87,8 +85,7 @@ always_comb begin
 			ID_rd		= IF_ID_inst[11:7];
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
-			opb_sel		= `SEL_0;
-			din_sel		= `SEL_0;
+			opb_sel		= `SEL_CONST;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -99,7 +96,6 @@ always_comb begin
 			ID_mem_cmd	= {1'b1, funct3};
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			din_sel		= `SEL_RS;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -110,7 +106,6 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
-			din_sel		= `SEL_0;
 			br_ctrl		= funct3;
 		end
 
@@ -120,8 +115,7 @@ always_comb begin
 			ID_rd		= IF_ID_inst[11:7];
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
-			opb_sel		= `SEL_0;
-			din_sel		= `SEL_0;
+			opb_sel		= `SEL_CONST;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -130,9 +124,8 @@ always_comb begin
 			ID_vld		= IF_ID_vld;
 			ID_rd		= IF_ID_inst[11:7];
 			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_0;
+			opa_sel		= `SEL_CONST;
 			opb_sel		= `SEL_IMM;
-			din_sel		= `SEL_0;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -143,7 +136,6 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_IMM;
-			din_sel		= `SEL_0;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -152,9 +144,8 @@ always_comb begin
 			ID_vld		= IF_ID_vld;
 			ID_rd		= `ZERO_REG;
 			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_0;
-			opb_sel		= `SEL_0;
-			din_sel		= `SEL_0;
+			opa_sel		= `SEL_CONST;
+			opb_sel		= `SEL_CONST;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -163,9 +154,8 @@ always_comb begin
 			ID_vld		= `FALSE;
 			ID_rd		= `ZERO_REG;
 			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_0;
-			opb_sel		= `SEL_0;
-			din_sel		= `SEL_0;
+			opa_sel		= `SEL_CONST;
+			opb_sel		= `SEL_CONST;
 			br_ctrl		= `DONT_BRANCH;
 		end
 
@@ -222,27 +212,18 @@ always_comb begin
 	endcase
 
 	// Forwarding overrides
-	if (opa_sel==`SEL_RS) begin
-		case (ID_rs1)
-			`ZERO_REG:	opa_sel = `SEL_0;
-			ID_EX_rd:	opa_sel = `SEL_F1;
-			EX_MEM_rd:	opa_sel = `SEL_F2;
-		endcase
-	end
-	if (opb_sel==`SEL_RS) begin
-		case (ID_rs2)
-			`ZERO_REG:	opb_sel = `SEL_0;
-			ID_EX_rd:	opb_sel = `SEL_F1;
-			EX_MEM_rd:	opb_sel = `SEL_F2;
-		endcase
-	end
-	if (din_sel==`SEL_RS) begin
-		case (ID_rs2)
-			`ZERO_REG:	din_sel = `SEL_0;
-			ID_EX_rd:	din_sel = `SEL_F1;
-			EX_MEM_rd:	din_sel = `SEL_F2;
-		endcase
-	end
+	case (ID_rs1)
+		`ZERO_REG:	forw_rs1 = `F0;
+		ID_EX_rd:	forw_rs1 = `F1;
+		EX_MEM_rd:	forw_rs1 = `F2;
+		default:	forw_rs1 = `F0;
+	endcase
+	case (ID_rs2)
+		`ZERO_REG:	forw_rs2 = `F0;
+		ID_EX_rd:	forw_rs2 = `F1;
+		EX_MEM_rd:	forw_rs2 = `F2;
+		default:	forw_rs2 = `F0;
+	endcase
 
 end
 
