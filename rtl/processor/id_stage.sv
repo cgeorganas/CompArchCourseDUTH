@@ -16,7 +16,8 @@ module id_stage(
 	output	logic	[4:0]	ID_rs2,
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
-	output	logic	[12:0]	ID_mux_sel,
+	output	logic	[9:0]	ID_mux_sel,
+	output	logic	[2:0]	ID_br_ctrl,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
@@ -28,8 +29,8 @@ assign ID_rs2 = IF_ID_inst[24:20];
 assign ID_pc = IF_ID_pc;
 
 logic [1:0] opa_sel, opb_sel;
-logic [2:0] br_ctrl, forw_rs1, forw_rs2;
-assign ID_mux_sel = {br_ctrl, opa_sel, opb_sel, forw_rs1, forw_rs2};
+logic [2:0] forw_rs1, forw_rs2;
+assign ID_mux_sel = {opa_sel, opb_sel, forw_rs1, forw_rs2};
 
 logic [31:0] imm_i, imm_s, imm_b, imm_j, imm_u;
 assign imm_i = {{20{IF_ID_inst[31]}}, IF_ID_inst[31:20]};
@@ -56,7 +57,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_ARITH_TYPE: begin
@@ -66,7 +67,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_LD_TYPE: begin
@@ -76,7 +77,7 @@ always_comb begin
 			ID_mem_cmd	= {1'b0, funct3};
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_JAL_TYPE: begin
@@ -86,7 +87,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_CONST;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`S_TYPE: begin
@@ -96,7 +97,7 @@ always_comb begin
 			ID_mem_cmd	= {1'b1, funct3};
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_IMM;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`B_TYPE: begin
@@ -106,7 +107,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
-			br_ctrl		= funct3;
+			ID_br_ctrl		= funct3;
 		end
 
 		`J_TYPE: begin
@@ -116,7 +117,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_CONST;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`U_LD_TYPE: begin
@@ -126,7 +127,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_CONST;
 			opb_sel		= `SEL_IMM;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`U_AUIPC_TYPE: begin
@@ -136,7 +137,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_PC;
 			opb_sel		= `SEL_IMM;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		`I_BREAK_TYPE: begin
@@ -146,7 +147,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_CONST;
 			opb_sel		= `SEL_CONST;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 		default: begin
@@ -156,7 +157,7 @@ always_comb begin
 			ID_mem_cmd	= `MEM_NONE;
 			opa_sel		= `SEL_CONST;
 			opb_sel		= `SEL_CONST;
-			br_ctrl		= `DONT_BRANCH;
+			ID_br_ctrl		= `DONT_BRANCH;
 		end
 
 	endcase

@@ -42,7 +42,8 @@ logic	[4:0]	ID_rs1;
 logic	[4:0]	ID_rs2;
 logic	[31:0]	ID_pc;
 logic	[31:0]	ID_imm;
-logic	[12:0]	ID_mux_sel;
+logic	[9:0]	ID_mux_sel;
+logic	[2:0]	ID_br_ctrl;
 logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
@@ -56,7 +57,8 @@ logic	[4:0]	ID_EX_rs1;
 logic	[4:0]	ID_EX_rs2;
 logic	[31:0]	ID_EX_pc;
 logic	[31:0]	ID_EX_imm;
-logic	[12:0]	ID_EX_mux_sel;
+logic	[9:0]	ID_EX_mux_sel;
+logic	[2:0]	ID_EX_br_ctrl;
 logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
@@ -172,6 +174,7 @@ id_stage id_stage_0(
 	.ID_pc				(ID_pc),
 	.ID_imm				(ID_imm),
 	.ID_mux_sel			(ID_mux_sel),
+	.ID_br_ctrl			(ID_br_ctrl),
 	.ID_alu_func		(ID_alu_func),
 	.ID_vld				(ID_vld),
 	.ID_mem_cmd			(ID_mem_cmd),
@@ -187,7 +190,8 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_rs2		<= 5'h0;
 		ID_EX_pc		<= 32'h0;
 		ID_EX_imm		<= 32'h0;
-		ID_EX_mux_sel	<= {`DONT_BRANCH, `SEL_CONST, `SEL_CONST, `F0, `F0};
+		ID_EX_mux_sel	<= {`SEL_CONST, `SEL_CONST, `F0, `F0};
+		ID_EX_br_ctrl	<= `DONT_BRANCH;
 		ID_EX_alu_func	<= `ALU_ADD;
 		ID_EX_vld		<= `FALSE;
 		ID_EX_mem_cmd	<= `MEM_NONE;
@@ -199,6 +203,7 @@ always_ff @(posedge clk or posedge rst) begin
 		ID_EX_pc		<= ID_pc;
 		ID_EX_imm		<= ID_imm;
 		ID_EX_mux_sel	<= ID_mux_sel;
+		ID_EX_br_ctrl	<= ID_br_ctrl;
 		ID_EX_alu_func	<= ID_alu_func;
 		ID_EX_vld		<= ID_vld;
 		ID_EX_mem_cmd	<= ID_mem_cmd;
@@ -218,6 +223,7 @@ ex_stage ex_stage_0(
 	.ID_EX_pc			(ID_EX_pc),
 	.ID_EX_imm			(ID_EX_imm),
 	.ID_EX_mux_sel		(ID_EX_mux_sel),
+	.ID_EX_br_ctrl		(ID_EX_br_ctrl),
 	.ID_EX_alu_func		(ID_EX_alu_func),
 	.ID_EX_vld			(ID_EX_vld),
 	.MEM_data			(MEM_data),
@@ -325,7 +331,7 @@ stall stall_0(
 	.clk				(clk),
 	.rst				(rst),
 
-	.ID_mux_sel			(ID_mux_sel),
+	.ID_br_ctrl			(ID_br_ctrl),
 
 	.ST_if_id_en		(ST_if_id_en),
 	.ST_id_ex_en		(ST_id_ex_en),

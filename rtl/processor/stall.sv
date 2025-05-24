@@ -6,7 +6,7 @@ module stall(
 	input	logic			clk,
 	input	logic			rst,
 
-	input	logic	[12:0]	ID_mux_sel,
+	input	logic	[2:0]	ID_br_ctrl,
 
 	output logic			ST_if_id_en,
 	output logic			ST_id_ex_en,
@@ -20,6 +20,6 @@ assign ST_id_ex_en = `TRUE;
 assign ST_ex_mem_en = `TRUE;
 assign ST_mem_wb_en = `TRUE;
 
-assign ST_br_stall = (ID_mux_sel[12:10]!=`DONT_BRANCH);
+assign ST_br_stall = (ID_br_ctrl!=`DONT_BRANCH);
 
 endmodule
