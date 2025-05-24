@@ -143,12 +143,12 @@ beq		a7, a7, error
 label_b3:
 li		a1, 0x2
 li		a2, 0x1
-bgeu	a1, a2, end
+bgeu	a1, a2, label_b4
 
 error:
 li		a0, 0x1
 
-end:
+label_b4:
 li		a3, 7
 nop
 # This verification benchmark will set "a0" to a
@@ -631,8 +631,18 @@ la		a2, label_j0
 sub		a0, a1, a2
 
 jal		a1, label_j1
+nop
 label_j1:
 la		a2, label_j1
+addi	a2, a2, -4
+sub		a0, a1, a2
+
+jal		a1, label_j2
+nop
+nop
+label_j2:
+la		a2, label_j2
+addi	a2, a2, -8
 sub		a0, a1, a2
 # This verification benchmark will set "a0" to a
 # non zero value if the result does not match the expected value.

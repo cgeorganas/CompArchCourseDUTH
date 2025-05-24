@@ -143,11 +143,11 @@ beq		a7, a7, error
 label_b3:
 li		a1, 0x2
 li		a2, 0x1
-bgeu	a1, a2, end
+bgeu	a1, a2, label_b4
 
 error:
 li		a0, 0x1
 
-end:
+label_b4:
 li		a3, 7
 nop
