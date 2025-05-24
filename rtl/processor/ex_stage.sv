@@ -21,7 +21,8 @@ module ex_stage(
 	output	logic	[31:0]	EX_alu_res,
 	output	logic			EX_vld,
 	output	logic	[31:0]	EX_br_pc,
-	output	logic			EX_take_br
+	output	logic			EX_take_br,
+	output	logic			EX_alu_busy
 );
 
 //Forwarded data
@@ -68,6 +69,38 @@ assign mult_opb = {sign_opb&&opb[31],opb};
 logic signed [65:0] mult_result;
 assign mult_result = mult_opa * mult_opb;
 
+//Divider
+logic [31:0] num, denom, quot, rem;
+
+logic done;
+assign done = (rem<denom)&&(num==opa)&&(denom==opb);
+assign EX_alu_busy = ~done;
+
+always_ff @(posedge clk) begin
+	if (rst) begin
+		num		<= 32'h0;
+		denom	<= 32'h0;
+		quot	<= 32'h0;
+		rem		<= 32'h0;
+	end
+	else begin
+		if ((num!=opa)&&(denom!=opb)) begin
+			num		<= opa;
+			denom	<= opb;
+			quot	<= 32'h0;
+			rem		<= opa;
+		end
+		else if (opb==32'h0) begin
+			quot	<= opa;
+			rem		<= 32'hffff_ffff;
+		end
+		else if (~done) begin
+			quot	<= quot + 1;
+			rem		<= rem - denom;
+		end
+	end
+end
+
 //ALU block
 always_comb begin
 	EX_alu_res = 32'hbaadbeef;
@@ -87,9 +120,9 @@ always_comb begin
 		`ALU_MULH:		EX_alu_res = mult_result[63:32];
 		`ALU_MULHSU:	EX_alu_res = mult_result[63:32];
 		`ALU_MULHU:		EX_alu_res = mult_result[63:32];
-		// `ALU_DIV:		EX_alu_res = 32'hbaadbeef;
+		`ALU_DIV:		EX_alu_res = quot;
 		// `ALU_DIVU:		EX_alu_res = 32'hbaadbeef;
-		// `ALU_REM:		EX_alu_res = 32'hbaadbeef;
+		`ALU_REM:		EX_alu_res = rem;
 		// `ALU_REMU:		EX_alu_res = 32'hbaadbeef;
 		default:		EX_vld = `FALSE;
 	endcase

@@ -82,6 +82,7 @@ logic			EX_MEM_vld;
 
 logic	[3:0]	EX_MEM_mem_cmd;
 logic	[4:0]	EX_MEM_rd;
+logic			EX_alu_busy;
 
 
 
@@ -233,7 +234,8 @@ ex_stage ex_stage_0(
 	.EX_alu_res			(EX_alu_res),
 	.EX_vld				(EX_vld),
 	.EX_br_pc			(EX_br_pc),
-	.EX_take_br			(EX_take_br)
+	.EX_take_br			(EX_take_br),
+	.EX_alu_busy		(EX_alu_busy)
 );
 
 
@@ -332,6 +334,8 @@ stall stall_0(
 	.rst				(rst),
 
 	.ID_br_ctrl			(ID_br_ctrl),
+	.ID_EX_alu_func		(ID_EX_alu_func),
+	.EX_alu_busy		(EX_alu_busy),
 
 	.ST_if_id_en		(ST_if_id_en),
 	.ST_id_ex_en		(ST_id_ex_en),

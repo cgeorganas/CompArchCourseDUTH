@@ -184,6 +184,10 @@ always_comb begin
 				`MULH_INST:									ID_alu_func = `ALU_MULH;
 				`MULHSU_INST:								ID_alu_func = `ALU_MULHSU;
 				`MULHU_INST:								ID_alu_func = `ALU_MULHU;
+				`DIV_INST:									ID_alu_func = `ALU_DIV;
+				`DIVU_INST:									ID_alu_func = `ALU_DIVU;
+				`REM_INST:									ID_alu_func = `ALU_REM;
+				`REMU_INST:									ID_alu_func = `ALU_REMU;
 				default:									ID_vld = `FALSE;
 			endcase
 		end
