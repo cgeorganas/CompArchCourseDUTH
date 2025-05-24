@@ -334,7 +334,6 @@ stall stall_0(
 	.rst				(rst),
 
 	.ID_br_ctrl			(ID_br_ctrl),
-	.ID_EX_alu_func		(ID_EX_alu_func),
 	.EX_alu_busy		(EX_alu_busy),
 
 	.ST_if_id_en		(ST_if_id_en),

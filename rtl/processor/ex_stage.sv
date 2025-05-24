@@ -70,10 +70,17 @@ logic signed [65:0] mult_result;
 assign mult_result = mult_opa * mult_opb;
 
 //Divider
+logic input_changed, done;
 logic [31:0] num, denom, quot, rem;
 
-logic done;
-assign done = (rem<denom)&&(num==opa)&&(denom==opb);
+assign input_changed = (num!=opa)||(denom!=opb);
+
+always_comb begin
+	case (ID_EX_alu_func)
+		`ALU_DIV, `ALU_REM:							done = (rem<denom)&&(~input_changed);
+		default:									done = `TRUE;
+	endcase
+end
 assign EX_alu_busy = ~done;
 
 always_ff @(posedge clk) begin
@@ -84,7 +91,7 @@ always_ff @(posedge clk) begin
 		rem		<= 32'h0;
 	end
 	else begin
-		if ((num!=opa)&&(denom!=opb)) begin
+		if (input_changed) begin
 			num		<= opa;
 			denom	<= opb;
 			quot	<= 32'h0;
@@ -121,9 +128,9 @@ always_comb begin
 		`ALU_MULHSU:	EX_alu_res = mult_result[63:32];
 		`ALU_MULHU:		EX_alu_res = mult_result[63:32];
 		`ALU_DIV:		EX_alu_res = quot;
-		// `ALU_DIVU:		EX_alu_res = 32'hbaadbeef;
+		`ALU_DIVU:		EX_alu_res = quot;
 		`ALU_REM:		EX_alu_res = rem;
-		// `ALU_REMU:		EX_alu_res = 32'hbaadbeef;
+		`ALU_REMU:		EX_alu_res = rem;
 		default:		EX_vld = `FALSE;
 	endcase
 end
