@@ -11,7 +11,7 @@ module ex_stage(
 	input	logic	[31:0]	ID_EX_pc,
 	input	logic	[31:0]	ID_EX_imm,
 	input	logic	[9:0]	ID_EX_mux_sel,
-	input	logic	[2:0]	ID_EX_br_ctrl,
+	input	logic	[3:0]	ID_EX_br_ctrl,
 	input	logic	[4:0]	ID_EX_alu_func,
 	input	logic			ID_EX_vld,
 	input 	logic	[31:0]	MEM_data,
@@ -96,15 +96,22 @@ always_comb begin
 end
 
 // Branch control
-assign EX_br_pc = ID_EX_pc + ID_EX_imm;
 always_comb begin
-	case(ID_EX_br_ctrl)
+
+	case(ID_EX_br_ctrl[2:0])
 		`BEQ_INST, `BNE_INST:							EX_take_br = ~((|EX_alu_res)^(ID_EX_br_ctrl[0]));
 		`BLT_INST, `BGE_INST, `BLTU_INST, `BGEU_INST:	EX_take_br = (EX_alu_res[0])^(ID_EX_br_ctrl[0]);
 		`UNC_BRANCH:									EX_take_br = `TRUE;
 		default:										EX_take_br = `FALSE;
 	endcase
+
 	if (~EX_vld)	EX_take_br = `FALSE;
+
+	if (ID_EX_br_ctrl[3])
+		EX_br_pc = (rs1_data + ID_EX_imm)&(~(32'h1));
+	else
+		EX_br_pc = ID_EX_pc + ID_EX_imm;
+
 end
 
 endmodule

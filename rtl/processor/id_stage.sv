@@ -17,7 +17,7 @@ module id_stage(
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
 	output	logic	[9:0]	ID_mux_sel,
-	output	logic	[2:0]	ID_br_ctrl,
+	output	logic	[3:0]	ID_br_ctrl,
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
@@ -46,118 +46,120 @@ assign funct7 = IF_ID_inst[31:25];
 logic [2:0] funct3;
 assign funct3 = IF_ID_inst[14:12];
 
+assign ID_br_ctrl[3] = (opcode==`I_JAL_TYPE);
+
 always_comb begin
 
 	case(opcode)
 
 		`R_TYPE: begin
-			ID_imm		= 32'h0;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_RS;
-			opb_sel		= `SEL_RS;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= 32'h0;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_RS;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`I_ARITH_TYPE: begin
-			ID_imm		= imm_i;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_RS;
-			opb_sel		= `SEL_IMM;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_i;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`I_LD_TYPE: begin
-			ID_imm		= imm_i;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= {1'b0, funct3};
-			opa_sel		= `SEL_RS;
-			opb_sel		= `SEL_IMM;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_i;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= {1'b0, funct3};
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`I_JAL_TYPE: begin
-			ID_imm		= imm_j;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_PC;
-			opb_sel		= `SEL_CONST;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_i;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `UNC_BRANCH;
 		end
 
 		`S_TYPE: begin
-			ID_imm		= imm_s;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= `ZERO_REG;
-			ID_mem_cmd	= {1'b1, funct3};
-			opa_sel		= `SEL_RS;
-			opb_sel		= `SEL_IMM;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_s;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= {1'b1, funct3};
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`B_TYPE: begin
-			ID_imm		= imm_b;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= `ZERO_REG;
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_RS;
-			opb_sel		= `SEL_RS;
-			ID_br_ctrl		= funct3;
+			ID_imm			= imm_b;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_RS;
+			ID_br_ctrl[2:0]	= funct3;
 		end
 
 		`J_TYPE: begin
-			ID_imm		= imm_j;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_PC;
-			opb_sel		= `SEL_CONST;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_j;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `UNC_BRANCH;
 		end
 
 		`U_LD_TYPE: begin
-			ID_imm		= imm_u;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_CONST;
-			opb_sel		= `SEL_IMM;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_u;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`U_AUIPC_TYPE: begin
-			ID_imm		= imm_u;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= IF_ID_inst[11:7];
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_PC;
-			opb_sel		= `SEL_IMM;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= imm_u;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= IF_ID_inst[11:7];
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`I_BREAK_TYPE: begin
-			ID_imm		= 32'h0;
-			ID_vld		= IF_ID_vld;
-			ID_rd		= `ZERO_REG;
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_CONST;
-			opb_sel		= `SEL_CONST;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= 32'h0;
+			ID_vld			= IF_ID_vld;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		default: begin
-			ID_imm		= 32'h0;
-			ID_vld		= `FALSE;
-			ID_rd		= `ZERO_REG;
-			ID_mem_cmd	= `MEM_NONE;
-			opa_sel		= `SEL_CONST;
-			opb_sel		= `SEL_CONST;
-			ID_br_ctrl		= `DONT_BRANCH;
+			ID_imm			= 32'h0;
+			ID_vld			= `FALSE;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 	endcase
