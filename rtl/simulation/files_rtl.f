@@ -2,6 +2,7 @@
 
 ../processor/if_stage.sv
 ../processor/id_stage.sv
+../processor/divider.sv
 ../processor/ex_stage.sv
 ../processor/mem_stage.sv
 ../processor/wb_stage.sv

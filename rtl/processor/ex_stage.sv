@@ -70,43 +70,17 @@ logic signed [65:0] mult_result;
 assign mult_result = mult_opa * mult_opb;
 
 //Divider
-logic input_changed, done;
-logic [31:0] num, denom, quot, rem;
-
-assign input_changed = (num!=opa)||(denom!=opb);
-
-always_comb begin
-	case (ID_EX_alu_func)
-		`ALU_DIV, `ALU_REM:							done = (rem<denom)&&(~input_changed);
-		default:									done = `TRUE;
-	endcase
-end
-assign EX_alu_busy = ~done;
-
-always_ff @(posedge clk) begin
-	if (rst) begin
-		num		<= 32'h0;
-		denom	<= 32'h0;
-		quot	<= 32'h0;
-		rem		<= 32'h0;
-	end
-	else begin
-		if (input_changed) begin
-			num		<= opa;
-			denom	<= opb;
-			quot	<= 32'h0;
-			rem		<= opa;
-		end
-		else if (opb==32'h0) begin
-			quot	<= opa;
-			rem		<= 32'hffff_ffff;
-		end
-		else if (~done) begin
-			quot	<= quot + 1;
-			rem		<= rem - denom;
-		end
-	end
-end
+logic [31:0] quotient, remainder;
+divider divider_0(
+	.clk			(clk),
+	.rst			(rst),
+	.opa			(opa),
+	.opb			(opb),
+	.ID_EX_alu_func	(ID_EX_alu_func),
+	.quotient		(quotient),
+	.remainder		(remainder),
+	.EX_alu_busy	(EX_alu_busy)
+);
 
 //ALU block
 always_comb begin
@@ -127,10 +101,10 @@ always_comb begin
 		`ALU_MULH:		EX_alu_res = mult_result[63:32];
 		`ALU_MULHSU:	EX_alu_res = mult_result[63:32];
 		`ALU_MULHU:		EX_alu_res = mult_result[63:32];
-		`ALU_DIV:		EX_alu_res = quot;
-		`ALU_DIVU:		EX_alu_res = quot;
-		`ALU_REM:		EX_alu_res = rem;
-		`ALU_REMU:		EX_alu_res = rem;
+		`ALU_DIV:		EX_alu_res = quotient;
+		`ALU_DIVU:		EX_alu_res = quotient;
+		`ALU_REM:		EX_alu_res = remainder;
+		`ALU_REMU:		EX_alu_res = remainder;
 		default:		EX_vld = `FALSE;
 	endcase
 end

@@ -29,11 +29,3 @@ Disassembly of section .text:
   54:	02c5e833          	rem	a6,a1,a2
   58:	00f6c533          	xor	a0,a3,a5
   5c:	01074533          	xor	a0,a4,a6
-  60:	00100593          	li	a1,1
-  64:	00000613          	li	a2,0
-  68:	fff00693          	li	a3,-1
-  6c:	00100713          	li	a4,1
-  70:	02c5c7b3          	div	a5,a1,a2
-  74:	02c5e833          	rem	a6,a1,a2
-  78:	00f6c533          	xor	a0,a3,a5
-  7c:	01074533          	xor	a0,a4,a6
