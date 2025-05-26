@@ -826,3 +826,411 @@ li		a2, 0xffffffff
 li		a3, 0x00000000
 mulhu	a4, a1, a2
 xor		a0, a3, a4
+
+
+
+# "DIV" benchmark
+
+# Test 1
+li		a1, 20
+li		a2, 6
+li		a3, 3
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 2
+li		a1, 20
+li		a2, -6
+li		a3, -3
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 3
+li		a1, -20
+li		a2, 6
+li		a3, -3
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 4
+li		a1, -20
+li		a2, -6
+li		a3, 3
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 5
+li		a1, 20
+li		a2, 1
+li		a3, 20
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 6
+li		a1, 20
+li		a2, 20
+li		a3, 1
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 7
+li		a1, 20
+li		a2, 4
+li		a3, 5
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 8
+li		a1, 20
+li		a2, 21
+li		a3, 0
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 9
+li		a1, 62975
+li		a2, 83
+li		a3, 758
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 10
+li		a1, 1
+li		a2, 0
+li		a3, -1
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 11
+li		a1, 34
+li		a2, 0
+li		a3, -1
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 12
+lui		a1, 0x80000
+li		a2, 2
+lui		a3, 0xc0000
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 13
+lui		a1, 0x80000
+lui		a2, 0x40000
+li		a3, -2
+div		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 14
+lui		a1, 0x80000
+li		a2, -1
+lui		a3, 0x80000
+div		a4, a1, a2
+xor		a0, a3, a4
+
+
+
+# "DIVU" benchmark
+
+# Test 1
+li		a1, 20
+li		a2, 6
+li		a3, 3
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 2
+li		a1, 20
+li		a2, -6
+li		a3, 0
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 3
+li		a1, -20
+li		a2, 6
+li		a3, 715827879
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 4
+li		a1, -20
+li		a2, -6
+li		a3, 0
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 5
+li		a1, 20
+li		a2, 1
+li		a3, 20
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 6
+li		a1, 20
+li		a2, 20
+li		a3, 1
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 7
+li		a1, 20
+li		a2, 4
+li		a3, 5
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 8
+li		a1, 20
+li		a2, 21
+li		a3, 0
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 9
+li		a1, 62975
+li		a2, 83
+li		a3, 758
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 10
+li		a1, 1
+li		a2, 0
+li		a3, -1
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 11
+li		a1, 34
+li		a2, 0
+li		a3, -1
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 12
+lui		a1, 0x80000
+li		a2, 2
+lui		a3, 0x40000
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 13
+lui		a1, 0x80000
+lui		a2, 0x40000
+li		a3, 2
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 14
+lui		a1, 0x80000
+li		a2, -1
+lui		a3, 0
+divu	a4, a1, a2
+xor		a0, a3, a4
+
+
+
+# "REM" benchmark
+
+# Test 1
+li		a1, 20
+li		a2, 6
+li		a3, 2
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 2
+li		a1, 20
+li		a2, -6
+li		a3, 2
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 3
+li		a1, -20
+li		a2, 6
+li		a3, -2
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 4
+li		a1, -20
+li		a2, -6
+li		a3, -2
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 5
+li		a1, 20
+li		a2, 1
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 6
+li		a1, 20
+li		a2, 20
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 7
+li		a1, 20
+li		a2, 4
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 8
+li		a1, 20
+li		a2, 21
+li		a3, 20
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 9
+li		a1, 62975
+li		a2, 83
+li		a3, 61
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 10
+li		a1, 1
+li		a2, 0
+li		a3, 1
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 11
+li		a1, 34
+li		a2, 0
+li		a3, 34
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 12
+lui		a1, 0x80000
+li		a2, 2
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 13
+lui		a1, 0x80000
+lui		a2, 0x40000
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+# Test 14
+lui		a1, 0x80000
+li		a2, -1
+li		a3, 0
+rem		a4, a1, a2
+xor		a0, a3, a4
+
+
+
+# "REMU" benchmark
+
+# Test 1
+li		a1, 20
+li		a2, 6
+li		a3, 2
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 2
+li		a1, 20
+li		a2, -6
+li		a3, 20
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 3
+li		a1, -20
+li		a2, 6
+li		a3, 2
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 4
+li		a1, -20
+li		a2, -6
+li		a3, -20
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 5
+li		a1, 20
+li		a2, 1
+li		a3, 0
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 6
+li		a1, 20
+li		a2, 20
+li		a3, 0
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 7
+li		a1, 20
+li		a2, 4
+li		a3, 0
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 8
+li		a1, 20
+li		a2, 21
+li		a3, 20
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 9
+li		a1, 62975
+li		a2, 83
+li		a3, 61
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 10
+li		a1, 1
+li		a2, 0
+li		a3, 1
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 11
+li		a1, 34
+li		a2, 0
+li		a3, 34
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 12
+lui		a1, 0x80000
+li		a2, 2
+li		a3, 0
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 13
+lui		a1, 0x80000
+lui		a2, 0x40000
+li		a3, 0
+remu	a4, a1, a2
+xor		a0, a3, a4
+
+# Test 14
+lui		a1, 0x80000
+li		a2, -1
+lui		a3, 0x80000
+remu	a4, a1, a2
+xor		a0, a3, a4
