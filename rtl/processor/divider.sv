@@ -39,22 +39,33 @@ assign new_input = (N!=N_prev)||(D!=D_prev);
 // Quotient and Remainder calculated using the algorithm
 logic [31:0] Q_nor, R_nor;
 
-// Flag to indicate edge case detetction, like overflow and division by 0
+// Flag to indicate edge case detection, like overflow and division by 0
 logic ec_flag;
 
 // Q and R for the edge cases
 logic [31:0] Q_ec, R_ec;
 
-// Edge case detec_flagtion
+// Edge case flags
+logic div_by_zero, overflow, larger_denom;
+assign div_by_zero	= (opb==32'h0);
+assign overflow		= (signed_op)&&(opa==32'h8000_0000)&&(opb==32'hffff_ffff);
+assign larger_denom = (N<D);
+
+// Edge case detection
 always_comb begin
-	if (opb==32'h0) begin
+	if (div_by_zero) begin
 		Q_ec	= 32'hffff_ffff;
 		R_ec	= opa;
 		ec_flag	= `TRUE;
 	end
-	else if ((signed_op)&&(opa==32'h8000_0000)&&(opb==32'hffff_ffff)) begin
+	else if (overflow) begin
 		Q_ec	= opa;
 		R_ec	= 32'h0;
+		ec_flag	= `TRUE;
+	end
+	else if (larger_denom) begin
+		Q_ec	= 32'h0;
+		R_ec	= opa;
 		ec_flag	= `TRUE;
 	end
 	else begin
@@ -75,49 +86,54 @@ always_comb begin
 	end
 end
 
-logic [4:0] w_bit;
+// Bit of Q that's currently being calculated
+logic [4:0] Q_curr_bit;
+
+// Value to be subtracted from the remainder
+logic [31:0] subtrahend;
 
 logic done;
-assign done = (D_msb>w_bit)&&(~new_input);
-
-logic [31:0] subtrahend;
+assign done = (Q_curr_bit<D_msb)&&(~new_input);
 
 always_ff @(posedge clk) begin
 	if (rst) begin
 		N_prev		<= 32'h0;
-		D_prev	<= 32'h0;
+		D_prev		<= 32'h0;
 		Q_nor		<= 32'h0;
 		R_nor		<= 32'h1;
-		subtrahend			<= 32'h0;
-		w_bit				<= 5'h0;
+		subtrahend	<= 32'h0;
+		Q_curr_bit	<= 5'h0;
 	end
 	else begin
 		if (new_input) begin
 			N_prev		<= N;
-			D_prev	<= D;
+			D_prev		<= D;
 			Q_nor		<= 32'h0;
 			R_nor		<= N;
-			subtrahend			<= D << (N_msb - D_msb);
-			w_bit				<= N_msb;
+			subtrahend	<= D << (N_msb-D_msb);
+			Q_curr_bit	<= N_msb;
 		end
 		else if (~done) begin
-			subtrahend					<= subtrahend >> 1;
-			w_bit						<= w_bit - 1;
 			if (R_nor>=subtrahend) begin
-				Q_nor[w_bit-D_msb]	<= 1'b1;
-				R_nor				<= R_nor - subtrahend;
+				Q_nor[Q_curr_bit-D_msb] <= 1'b1;
+				R_nor	<= R_nor - subtrahend;
 			end
+			subtrahend	<= subtrahend >> 1;
+			Q_curr_bit	<= Q_curr_bit - 1;
 		end
 	end
 end
 
+// Calculate the signs based on raw input operands
 logic Q_sign, R_sign;
-assign Q_sign = signed_op ? opa[31]^opb[31] : `FALSE;
-assign R_sign = signed_op ? opa[31] : `FALSE;
+assign Q_sign = (signed_op)&&(opa[31]^opb[31]);
+assign R_sign = (signed_op)&&(opa[31]);
 
+// Pick edge case output or normal output
 assign quotient = ec_flag ? Q_ec : (Q_sign ? -Q_nor : Q_nor);
 assign remainder = ec_flag ? R_ec : (R_sign ? -R_nor : R_nor);
 
-assign EX_alu_busy = ec_flag ? `FALSE : (~done)&&(active);
+// Output flag, used to freeze the pipeline registers
+assign EX_alu_busy = (~ec_flag)&&(~done)&&(active);
 
 endmodule
