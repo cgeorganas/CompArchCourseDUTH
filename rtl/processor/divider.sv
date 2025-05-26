@@ -14,95 +14,110 @@ module divider(
 	output	logic			EX_alu_busy
 );
 
-logic signed_div, unsigned_div;
-assign signed_div = (ID_EX_alu_func==`ALU_DIV)||(ID_EX_alu_func==`ALU_REM);
-assign unsigned_div = (ID_EX_alu_func==`ALU_DIVU)||(ID_EX_alu_func==`ALU_REMU);
+// Flag to indicate signed operands
+logic signed_op;
+assign signed_op = (ID_EX_alu_func==`ALU_DIV)||(ID_EX_alu_func==`ALU_REM);
 
-logic [31:0] numerator, denominator;
-logic [31:0] ec_quotient, ec_remainder; // Edge cases
-logic edge_case;
+// Flag to indicate whether the module is actually being used
+logic active;
+assign active = (signed_op)||(ID_EX_alu_func==`ALU_DIVU)||(ID_EX_alu_func==`ALU_REMU);
 
+// Numerator and Denominator
+logic [31:0] N, D;
+
+// Use absolute value of input operands, calculate sign later
+assign N = (signed_op&&opa[31]) ? -opa : opa;
+assign D = (signed_op&&opb[31]) ? -opb : opb;
+
+// Previous versions of N and D, used to detec_flagt when the inputs change
+logic [31:0] N_prev, D_prev;
+
+// Flag used to restart the algorithm
+logic new_input;
+assign new_input = (N!=N_prev)||(D!=D_prev);
+
+// Quotient and Remainder calculated using the algorithm
+logic [31:0] Q_nor, R_nor;
+
+// Flag to indicate edge case detetction, like overflow and division by 0
+logic ec_flag;
+
+// Q and R for the edge cases
+logic [31:0] Q_ec, R_ec;
+
+// Edge case detec_flagtion
 always_comb begin
 	if (opb==32'h0) begin
-		ec_quotient		= 32'hffff_ffff;
-		ec_remainder	= opa;
-		edge_case		= `TRUE;
-		numerator		= 32'h0;
-		denominator		= 32'h1;
+		Q_ec	= 32'hffff_ffff;
+		R_ec	= opa;
+		ec_flag	= `TRUE;
 	end
-	else if ((signed_div)&&(opa==32'h8000_0000)&&(opb==32'hffff_ffff)) begin
-		ec_quotient		= opa;
-		ec_remainder	= 32'h0;
-		edge_case		= `TRUE;
-		numerator		= 32'h0;
-		denominator		= 32'h1;
+	else if ((signed_op)&&(opa==32'h8000_0000)&&(opb==32'hffff_ffff)) begin
+		Q_ec	= opa;
+		R_ec	= 32'h0;
+		ec_flag	= `TRUE;
 	end
 	else begin
-		ec_quotient		= 32'h0;
-		ec_remainder	= 32'h0;
-		edge_case		= `FALSE;
-		numerator		= (signed_div&&opa[31]) ? -opa : opa;
-		denominator		= (signed_div&&opb[31]) ? -opb : opb;
+		Q_ec	= 32'h0;
+		R_ec	= 32'h0;
+		ec_flag	= `FALSE;
 	end
 end
 
-logic [31:0] prev_numerator, prev_denominator;
-logic [31:0] nor_quotient, nor_remainder;
-
-logic input_changed;
-assign input_changed = (numerator!=prev_numerator)||(prev_denominator!=denominator);
-
-logic [4:0] n_msb, d_msb, w_bit;
+// Positions of the most signifact bits of N and D
+logic [4:0] N_msb, D_msb;
 always_comb begin
-	n_msb = 5'h0;
-	d_msb = 5'h0;
+	N_msb = 5'h0;
+	D_msb = 5'h0;
 	for (int i=0; i<31; i++) begin
-		if (numerator[i]) n_msb = i;
-		if (denominator[i]) d_msb = i;
+		if (N[i]) N_msb = i;
+		if (D[i]) D_msb = i;
 	end
 end
+
+logic [4:0] w_bit;
 
 logic done;
-assign done = (d_msb>w_bit)&&(~input_changed);
+assign done = (D_msb>w_bit)&&(~new_input);
 
 logic [31:0] subtrahend;
 
 always_ff @(posedge clk) begin
 	if (rst) begin
-		prev_numerator		<= 32'h0;
-		prev_denominator	<= 32'h0;
-		nor_quotient		<= 32'h0;
-		nor_remainder		<= 32'h1;
+		N_prev		<= 32'h0;
+		D_prev	<= 32'h0;
+		Q_nor		<= 32'h0;
+		R_nor		<= 32'h1;
 		subtrahend			<= 32'h0;
 		w_bit				<= 5'h0;
 	end
 	else begin
-		if (input_changed) begin
-			prev_numerator		<= numerator;
-			prev_denominator	<= denominator;
-			nor_quotient		<= 32'h0;
-			nor_remainder		<= numerator;
-			subtrahend			<= denominator << (n_msb - d_msb);
-			w_bit				<= n_msb;
+		if (new_input) begin
+			N_prev		<= N;
+			D_prev	<= D;
+			Q_nor		<= 32'h0;
+			R_nor		<= N;
+			subtrahend			<= D << (N_msb - D_msb);
+			w_bit				<= N_msb;
 		end
 		else if (~done) begin
 			subtrahend					<= subtrahend >> 1;
 			w_bit						<= w_bit - 1;
-			if (nor_remainder>subtrahend) begin
-				nor_quotient[w_bit-d_msb]	<= 1'b1;
-				nor_remainder				<= nor_remainder - subtrahend;
+			if (R_nor>=subtrahend) begin
+				Q_nor[w_bit-D_msb]	<= 1'b1;
+				R_nor				<= R_nor - subtrahend;
 			end
 		end
 	end
 end
 
-logic sign_q, sign_r;
-assign sign_q = signed_div ? opa[31]^opb[31] : `FALSE;
-assign sign_r = signed_div ? opa[31] : `FALSE;
+logic Q_sign, R_sign;
+assign Q_sign = signed_op ? opa[31]^opb[31] : `FALSE;
+assign R_sign = signed_op ? opa[31] : `FALSE;
 
-assign quotient = edge_case ? ec_quotient : (sign_q ? -nor_quotient : nor_quotient);
-assign remainder = edge_case ? ec_remainder : (sign_r ? -nor_remainder : nor_remainder);
+assign quotient = ec_flag ? Q_ec : (Q_sign ? -Q_nor : Q_nor);
+assign remainder = ec_flag ? R_ec : (R_sign ? -R_nor : R_nor);
 
-assign EX_alu_busy = edge_case ? `FALSE : (~done)&&(signed_div||unsigned_div);
+assign EX_alu_busy = ec_flag ? `FALSE : (~done)&&(active);
 
 endmodule
