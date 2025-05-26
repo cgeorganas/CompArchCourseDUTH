@@ -80,7 +80,7 @@ logic [4:0] N_msb, D_msb;
 always_comb begin
 	N_msb = 5'h0;
 	D_msb = 5'h0;
-	for (int i=0; i<31; i++) begin
+	for (int i=0; i<32; i++) begin
 		if (N[i]) N_msb = i;
 		if (D[i]) D_msb = i;
 	end
@@ -92,8 +92,9 @@ logic [4:0] Q_curr_bit;
 // Value to be subtracted from the remainder
 logic [31:0] subtrahend;
 
+// Flag indicating that the division is complete
 logic done;
-assign done = (Q_curr_bit<D_msb)&&(~new_input);
+assign done = (R_nor<D_prev)&&(~new_input);
 
 always_ff @(posedge clk) begin
 	if (rst) begin
@@ -111,11 +112,11 @@ always_ff @(posedge clk) begin
 			Q_nor		<= 32'h0;
 			R_nor		<= N;
 			subtrahend	<= D << (N_msb-D_msb);
-			Q_curr_bit	<= N_msb;
+			Q_curr_bit	<= (N_msb-D_msb);
 		end
 		else if (~done) begin
 			if (R_nor>=subtrahend) begin
-				Q_nor[Q_curr_bit-D_msb] <= 1'b1;
+				Q_nor[Q_curr_bit] <= 1'b1;
 				R_nor	<= R_nor - subtrahend;
 			end
 			subtrahend	<= subtrahend >> 1;
