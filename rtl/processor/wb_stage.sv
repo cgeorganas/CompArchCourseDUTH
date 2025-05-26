@@ -8,10 +8,10 @@ module wb_stage(
 
 	input	logic	[31:0]	MEM_WB_data,
 	input	logic			MEM_WB_vld,
-	input	logic	[4:0]	MEM_WB_rd,
+	input	logic	[5:0]	MEM_WB_rd,
 
 	output	logic	[31:0]	WB_data,
-	output	logic	[4:0]	WB_rd
+	output	logic	[5:0]	WB_rd
 );
 
 assign WB_data = MEM_WB_data;

@@ -38,8 +38,8 @@ logic			IF_ID_vld;
 
 
 // Outputs from ID stage
-logic	[4:0]	ID_rs1;
-logic	[4:0]	ID_rs2;
+logic	[5:0]	ID_rs1;
+logic	[5:0]	ID_rs2;
 logic	[31:0]	ID_pc;
 logic	[31:0]	ID_imm;
 logic	[9:0]	ID_mux_sel;
@@ -48,13 +48,13 @@ logic	[4:0]	ID_alu_func;
 logic			ID_vld;
 
 logic	[3:0]	ID_mem_cmd;
-logic	[4:0]	ID_rd;
+logic	[5:0]	ID_rd;
 
 
 
 // Outputs from ID/EX pipeline register
-logic	[4:0]	ID_EX_rs1;
-logic	[4:0]	ID_EX_rs2;
+logic	[5:0]	ID_EX_rs1;
+logic	[5:0]	ID_EX_rs2;
 logic	[31:0]	ID_EX_pc;
 logic	[31:0]	ID_EX_imm;
 logic	[9:0]	ID_EX_mux_sel;
@@ -63,7 +63,7 @@ logic	[4:0]	ID_EX_alu_func;
 logic			ID_EX_vld;
 
 logic	[3:0]	ID_EX_mem_cmd;
-logic	[4:0]	ID_EX_rd;
+logic	[5:0]	ID_EX_rd;
 
 
 
@@ -81,7 +81,7 @@ logic	[31:0]	EX_MEM_alu_res;
 logic			EX_MEM_vld;
 
 logic	[3:0]	EX_MEM_mem_cmd;
-logic	[4:0]	EX_MEM_rd;
+logic	[5:0]	EX_MEM_rd;
 logic			EX_alu_busy;
 
 
@@ -100,13 +100,13 @@ logic			MEM_vld;
 logic	[31:0]	MEM_WB_data;
 logic			MEM_WB_vld;
 
-logic	[4:0]	MEM_WB_rd;
+logic	[5:0]	MEM_WB_rd;
 
 
 
 // Outputs from WB stage
 logic	[31:0]	WB_data;
-logic	[4:0]	WB_rd;
+logic	[5:0]	WB_rd;
 
 
 
@@ -187,8 +187,8 @@ id_stage id_stage_0(
 // ID/EX pipeline register
 always_ff @(posedge clk or posedge rst) begin
 	if (rst) begin
-		ID_EX_rs1		<= 5'h0;
-		ID_EX_rs2		<= 5'h0;
+		ID_EX_rs1		<= `ZERO_REG;
+		ID_EX_rs2		<= `ZERO_REG;
 		ID_EX_pc		<= 32'h0;
 		ID_EX_imm		<= 32'h0;
 		ID_EX_mux_sel	<= {`SEL_CONST, `SEL_CONST, `F0, `F0};

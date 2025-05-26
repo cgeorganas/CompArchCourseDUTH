@@ -9,11 +9,11 @@ module id_stage(
 	input	logic	[31:0]	IF_ID_pc,
 	input	logic	[31:0]	IF_ID_inst,
 	input	logic			IF_ID_vld,
-	input	logic	[4:0]	ID_EX_rd,
-	input	logic	[4:0]	EX_MEM_rd,
+	input	logic	[5:0]	ID_EX_rd,
+	input	logic	[5:0]	EX_MEM_rd,
 
-	output	logic	[4:0]	ID_rs1,
-	output	logic	[4:0]	ID_rs2,
+	output	logic	[5:0]	ID_rs1,
+	output	logic	[5:0]	ID_rs2,
 	output	logic	[31:0]	ID_pc,
 	output	logic	[31:0]	ID_imm,
 	output	logic	[9:0]	ID_mux_sel,
@@ -21,11 +21,11 @@ module id_stage(
 	output	logic	[4:0]	ID_alu_func,
 	output	logic			ID_vld,
 	output	logic	[3:0]	ID_mem_cmd,
-	output	logic	[4:0]	ID_rd
+	output	logic	[5:0]	ID_rd
 );
 
-assign ID_rs1 = IF_ID_inst[19:15];
-assign ID_rs2 = IF_ID_inst[24:20];
+assign ID_rs1 = {1'b0, IF_ID_inst[19:15]};
+assign ID_rs2 = {1'b0, IF_ID_inst[24:20]};
 assign ID_pc = IF_ID_pc;
 
 logic [1:0] opa_sel, opb_sel;
@@ -55,7 +55,7 @@ always_comb begin
 		`R_TYPE: begin
 			ID_imm			= 32'h0;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_RS;
 			opb_sel			= `SEL_RS;
@@ -65,7 +65,7 @@ always_comb begin
 		`I_ARITH_TYPE: begin
 			ID_imm			= imm_i;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_RS;
 			opb_sel			= `SEL_IMM;
@@ -75,7 +75,7 @@ always_comb begin
 		`I_LD_TYPE: begin
 			ID_imm			= imm_i;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= {1'b0, funct3};
 			opa_sel			= `SEL_RS;
 			opb_sel			= `SEL_IMM;
@@ -85,7 +85,7 @@ always_comb begin
 		`I_JAL_TYPE: begin
 			ID_imm			= imm_i;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_PC;
 			opb_sel			= `SEL_CONST;
@@ -115,7 +115,7 @@ always_comb begin
 		`J_TYPE: begin
 			ID_imm			= imm_j;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_PC;
 			opb_sel			= `SEL_CONST;
@@ -125,7 +125,7 @@ always_comb begin
 		`U_LD_TYPE: begin
 			ID_imm			= imm_u;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_CONST;
 			opb_sel			= `SEL_IMM;
@@ -135,7 +135,7 @@ always_comb begin
 		`U_AUIPC_TYPE: begin
 			ID_imm			= imm_u;
 			ID_vld			= IF_ID_vld;
-			ID_rd			= IF_ID_inst[11:7];
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_PC;
 			opb_sel			= `SEL_IMM;

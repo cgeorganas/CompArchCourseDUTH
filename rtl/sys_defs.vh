@@ -10,7 +10,7 @@
 
 
 //Returns a zero value, and any write to this register is thrown away
-`define ZERO_REG				5'h00
+`define ZERO_REG				6'h00
 
 //Useful boolean single-bit definitions
 `define FALSE					1'b0
