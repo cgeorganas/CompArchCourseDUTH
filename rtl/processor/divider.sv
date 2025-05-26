@@ -14,7 +14,6 @@ module divider(
 	output	logic			EX_alu_busy
 );
 
-
 logic signed_div, unsigned_div;
 assign signed_div = (ID_EX_alu_func==`ALU_DIV)||(ID_EX_alu_func==`ALU_REM);
 assign unsigned_div = (ID_EX_alu_func==`ALU_DIVU)||(ID_EX_alu_func==`ALU_REMU);
@@ -31,7 +30,7 @@ always_comb begin
 		numerator		= 32'h0;
 		denominator		= 32'h1;
 	end
-	else if ((signed_div)&&(opa==32'h8000_0000)) begin
+	else if ((signed_div)&&(opa==32'h8000_0000)&&(opb==32'hffff_ffff)) begin
 		ec_quotient		= opa;
 		ec_remainder	= 32'h0;
 		edge_case		= `TRUE;
@@ -53,8 +52,20 @@ logic [31:0] nor_quotient, nor_remainder;
 logic input_changed;
 assign input_changed = (numerator!=prev_numerator)||(prev_denominator!=denominator);
 
+logic [4:0] n_msb, d_msb, w_bit;
+always_comb begin
+	n_msb = 5'h0;
+	d_msb = 5'h0;
+	for (int i=0; i<31; i++) begin
+		if (numerator[i]) n_msb = i;
+		if (denominator[i]) d_msb = i;
+	end
+end
+
 logic done;
-assign done = (nor_remainder<prev_denominator)&&(~input_changed);
+assign done = (d_msb>w_bit)&&(~input_changed);
+
+logic [31:0] subtrahend;
 
 always_ff @(posedge clk) begin
 	if (rst) begin
@@ -62,6 +73,8 @@ always_ff @(posedge clk) begin
 		prev_denominator	<= 32'h0;
 		nor_quotient		<= 32'h0;
 		nor_remainder		<= 32'h1;
+		subtrahend			<= 32'h0;
+		w_bit				<= 5'h0;
 	end
 	else begin
 		if (input_changed) begin
@@ -69,10 +82,16 @@ always_ff @(posedge clk) begin
 			prev_denominator	<= denominator;
 			nor_quotient		<= 32'h0;
 			nor_remainder		<= numerator;
+			subtrahend			<= denominator << (n_msb - d_msb);
+			w_bit				<= n_msb;
 		end
 		else if (~done) begin
-			nor_quotient		<= nor_quotient + 1;
-			nor_remainder		<= nor_remainder - prev_denominator;
+			subtrahend					<= subtrahend >> 1;
+			w_bit						<= w_bit - 1;
+			if (nor_remainder>subtrahend) begin
+				nor_quotient[w_bit-d_msb]	<= 1'b1;
+				nor_remainder				<= nor_remainder - subtrahend;
+			end
 		end
 	end
 end
@@ -84,6 +103,6 @@ assign sign_r = signed_div ? opa[31] : `FALSE;
 assign quotient = edge_case ? ec_quotient : (sign_q ? -nor_quotient : nor_quotient);
 assign remainder = edge_case ? ec_remainder : (sign_r ? -nor_remainder : nor_remainder);
 
-assign EX_alu_busy = edge_case ? `FALSE : ~done;
+assign EX_alu_busy = edge_case ? `FALSE : (~done)&&(signed_div||unsigned_div);
 
 endmodule
