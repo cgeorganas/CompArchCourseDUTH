@@ -1,9 +1,3 @@
-# This verification benchmark will set "a0" to a
-# non zero value if the result does not match the expected value.
-
-
-# "AUIPC" benchmark
-
 auipc	a1, 0
 auipc	a2, 0
 addi	a1, a1, 4

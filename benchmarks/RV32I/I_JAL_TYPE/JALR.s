@@ -1,6 +1,3 @@
-# This verification benchmark will set "a0" to a
-# non zero value if the result does not match the expected value.
-
 auipc	a1, 0
 jalr	a2, a1, 12
 li		a0, 1
