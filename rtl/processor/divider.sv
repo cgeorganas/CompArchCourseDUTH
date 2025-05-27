@@ -11,7 +11,7 @@ module divider(
 
 	output	logic	[31:0]	quotient,
 	output	logic	[31:0]	remainder,
-	output	logic			EX_alu_busy
+	output	logic			divider_busy
 );
 
 // Flag to indicate signed operands
@@ -135,6 +135,6 @@ assign quotient = ec_flag ? Q_ec : (Q_sign ? -Q_nor : Q_nor);
 assign remainder = ec_flag ? R_ec : (R_sign ? -R_nor : R_nor);
 
 // Output flag, used to freeze the pipeline registers
-assign EX_alu_busy = (~ec_flag)&&(~done)&&(active);
+assign divider_busy = (~ec_flag)&&(~done)&&(active);
 
 endmodule

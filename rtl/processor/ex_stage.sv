@@ -70,6 +70,7 @@ logic signed [65:0] mult_result;
 assign mult_result = mult_opa * mult_opb;
 
 //Divider
+logic divider_busy;
 logic [31:0] quotient, remainder;
 divider divider_0(
 	.clk			(clk),
@@ -79,8 +80,23 @@ divider divider_0(
 	.ID_EX_alu_func	(ID_EX_alu_func),
 	.quotient		(quotient),
 	.remainder		(remainder),
-	.EX_alu_busy	(EX_alu_busy)
+	.divider_busy	(divider_busy)
 );
+
+//FPU
+logic fpu_busy;
+logic [31:0] fpu_res;
+fpu fpu_0(
+	.clk			(clk),
+	.rst			(rst),
+	.opa			(opa),
+	.opb			(opb),
+	.ID_EX_alu_func	(ID_EX_alu_func),
+	.fpu_res		(fpu_res),
+	.fpu_busy		(fpu_busy)
+);
+
+assign EX_alu_busy = (divider_busy)||(fpu_busy);
 
 //ALU block
 always_comb begin

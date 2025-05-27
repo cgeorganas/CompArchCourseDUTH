@@ -150,6 +150,8 @@
 `define ALU_DIVU				5'h0f
 `define ALU_REM					5'h10
 `define ALU_REMU				5'h11
+`define ALU_FCVTSW				5'h12
+`define ALU_FCVTSWU				5'h13
 
 // Memory bus commands control signals
 `define MEM_LB					4'b0_000
