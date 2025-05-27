@@ -50,125 +50,19 @@ assign ID_br_ctrl[3] = (opcode==`I_JAL_TYPE);
 
 always_comb begin
 
+	ID_alu_func	= `ALU_ADD;
+	ID_vld		= IF_ID_vld;
+
 	case(opcode)
 
 		`R_TYPE: begin
 			ID_imm			= 32'h0;
-			ID_vld			= IF_ID_vld;
 			ID_rd			= {1'b0, IF_ID_inst[11:7]};
 			ID_mem_cmd		= `MEM_NONE;
 			opa_sel			= `SEL_RS;
 			opb_sel			= `SEL_RS;
 			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
 
-		`I_ARITH_TYPE: begin
-			ID_imm			= imm_i;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_RS;
-			opb_sel			= `SEL_IMM;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		`I_LD_TYPE: begin
-			ID_imm			= imm_i;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= {1'b0, funct3};
-			opa_sel			= `SEL_RS;
-			opb_sel			= `SEL_IMM;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		`I_JAL_TYPE: begin
-			ID_imm			= imm_i;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_PC;
-			opb_sel			= `SEL_CONST;
-			ID_br_ctrl[2:0]	= `UNC_BRANCH;
-		end
-
-		`S_TYPE: begin
-			ID_imm			= imm_s;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= `ZERO_REG;
-			ID_mem_cmd		= {1'b1, funct3};
-			opa_sel			= `SEL_RS;
-			opb_sel			= `SEL_IMM;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		`B_TYPE: begin
-			ID_imm			= imm_b;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= `ZERO_REG;
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_RS;
-			opb_sel			= `SEL_RS;
-			ID_br_ctrl[2:0]	= funct3;
-		end
-
-		`J_TYPE: begin
-			ID_imm			= imm_j;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_PC;
-			opb_sel			= `SEL_CONST;
-			ID_br_ctrl[2:0]	= `UNC_BRANCH;
-		end
-
-		`U_LD_TYPE: begin
-			ID_imm			= imm_u;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_CONST;
-			opb_sel			= `SEL_IMM;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		`U_AUIPC_TYPE: begin
-			ID_imm			= imm_u;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= {1'b0, IF_ID_inst[11:7]};
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_PC;
-			opb_sel			= `SEL_IMM;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		`I_BREAK_TYPE: begin
-			ID_imm			= 32'h0;
-			ID_vld			= IF_ID_vld;
-			ID_rd			= `ZERO_REG;
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_CONST;
-			opb_sel			= `SEL_CONST;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-		default: begin
-			ID_imm			= 32'h0;
-			ID_vld			= `FALSE;
-			ID_rd			= `ZERO_REG;
-			ID_mem_cmd		= `MEM_NONE;
-			opa_sel			= `SEL_CONST;
-			opb_sel			= `SEL_CONST;
-			ID_br_ctrl[2:0]	= `DONT_BRANCH;
-		end
-
-	endcase
-
-
-	ID_alu_func = `ALU_ADD;
-	case(opcode)
-	
-		`R_TYPE: begin
 			case({funct3, funct7})
 				`ADD_INST:									ID_alu_func = `ALU_ADD;
 				`SUB_INST:									ID_alu_func = `ALU_SUB;
@@ -190,9 +84,17 @@ always_comb begin
 				`REMU_INST:									ID_alu_func = `ALU_REMU;
 				default:									ID_vld = `FALSE;
 			endcase
+
 		end
 
 		`I_ARITH_TYPE: begin
+			ID_imm			= imm_i;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+
 			case(funct3)
 				`ADDI_INST:									ID_alu_func = `ALU_ADD;
 				`XORI_INST:									ID_alu_func = `ALU_XOR;
@@ -204,9 +106,44 @@ always_comb begin
 				`SLTIU_INST:								ID_alu_func = `ALU_SLTU;
 				default:									ID_vld = `FALSE;
 			endcase
+
+		end
+
+		`I_LD_TYPE: begin
+			ID_imm			= imm_i;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= {1'b0, funct3};
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
+		`I_JAL_TYPE: begin
+			ID_imm			= imm_i;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `UNC_BRANCH;
+		end
+
+		`S_TYPE: begin
+			ID_imm			= imm_s;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= {1'b1, funct3};
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 		`B_TYPE: begin
+			ID_imm			= imm_b;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_RS;
+			ID_br_ctrl[2:0]	= funct3;
+
 			case(funct3)
 				`BEQ_INST, `BNE_INST:						ID_alu_func = `ALU_XOR;
 				`BLT_INST, `BGE_INST:						ID_alu_func = `ALU_SLT;
@@ -214,9 +151,58 @@ always_comb begin
 				`DONT_BRANCH, `UNC_BRANCH:					ID_alu_func = `ALU_ADD;
 				default:									ID_vld = `FALSE;
 			endcase
+
+		end
+
+		`J_TYPE: begin
+			ID_imm			= imm_j;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `UNC_BRANCH;
+		end
+
+		`U_LD_TYPE: begin
+			ID_imm			= imm_u;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
+		`U_AUIPC_TYPE: begin
+			ID_imm			= imm_u;
+			ID_rd			= {1'b0, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_PC;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
+		`I_BREAK_TYPE: begin
+			ID_imm			= 32'h0;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
+		default: begin
+			ID_imm			= 32'h0;
+			ID_vld			= `FALSE;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_CONST;
+			opb_sel			= `SEL_CONST;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
 		end
 
 	endcase
+
+
 
 	// Forwarding overrides
 	case (ID_rs1)
