@@ -220,6 +220,26 @@ always_comb begin
 
 		end
 
+		`S_FLT_TYPE: begin
+			ID_imm			= imm_s;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_SW;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+			ID_rs1			= {1'b0, IF_ID_inst[19:15]};
+			ID_rs2			= {1'b1, IF_ID_inst[24:20]};
+		end
+
+		`I_LDFLT_TYPE: begin
+			ID_imm			= imm_i;
+			ID_rd			= {1'b1, IF_ID_inst[11:7]};
+			ID_mem_cmd		= `MEM_LW;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_IMM;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
 		default: begin
 			ID_imm			= 32'h0;
 			ID_vld			= `FALSE;
