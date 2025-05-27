@@ -24,8 +24,6 @@ module id_stage(
 	output	logic	[5:0]	ID_rd
 );
 
-assign ID_rs1 = {1'b0, IF_ID_inst[19:15]};
-assign ID_rs2 = {1'b0, IF_ID_inst[24:20]};
 assign ID_pc = IF_ID_pc;
 
 logic [1:0] opa_sel, opb_sel;
@@ -49,6 +47,9 @@ assign funct3 = IF_ID_inst[14:12];
 assign ID_br_ctrl[3] = (opcode==`I_JAL_TYPE);
 
 always_comb begin
+
+	ID_rs1		= {1'b0, IF_ID_inst[19:15]};
+	ID_rs2		= {1'b0, IF_ID_inst[24:20]};
 
 	ID_alu_func	= `ALU_ADD;
 	ID_vld		= IF_ID_vld;
@@ -188,6 +189,35 @@ always_comb begin
 			opa_sel			= `SEL_CONST;
 			opb_sel			= `SEL_CONST;
 			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+		end
+
+		`R_FLT_TYPE: begin
+			ID_imm			= 32'h0;
+			ID_rd			= `ZERO_REG;
+			ID_mem_cmd		= `MEM_NONE;
+			opa_sel			= `SEL_RS;
+			opb_sel			= `SEL_RS;
+			ID_br_ctrl[2:0]	= `DONT_BRANCH;
+
+			case({funct3, funct7})
+				`FMVXW: begin
+					ID_rs1	= {1'b1, IF_ID_inst[19:15]};
+					ID_rs2	= `ZERO_REG;
+					ID_rd	= {1'b0, IF_ID_inst[11:7]};
+				end
+				`FMVWX: begin
+					ID_rs1	= {1'b0, IF_ID_inst[19:15]};
+					ID_rs2	= `ZERO_REG;
+					ID_rd	= {1'b1, IF_ID_inst[11:7]};
+				end
+				default: begin
+					ID_rs1	= `ZERO_REG;
+					ID_rs2	= `ZERO_REG;
+					ID_rd	= `ZERO_REG;
+					ID_vld	= `FALSE;
+				end
+			endcase
+
 		end
 
 		default: begin

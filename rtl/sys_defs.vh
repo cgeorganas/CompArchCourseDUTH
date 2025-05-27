@@ -60,27 +60,29 @@
 `define REM_INST				{3'h6, 7'h01}
 `define REMU_INST				{3'h7, 7'h01}
 
+//{funct3, funct7}, R-FLT-TYPE
+`define FSGNJS					{3'b000, 7'b0010000}
+`define FSGNJNS					{3'b001, 7'b0010000}
+`define FSGNJXS					{3'b010, 7'b0010000}
+`define FMINS					{3'b000, 7'b0010100}
+`define FMAXS					{3'b001, 7'b0010100}
+`define FMVXW					{3'b000, 7'b1110000}
+`define FEQS					{3'b010, 7'b1010000}
+`define FLTS					{3'b001, 7'b1010000}
+`define FLES					{3'b000, 7'b1010000}
+`define FCLASSS					{3'b001, 7'b1110000}
+`define FMVWX					{3'b000, 7'b1111000}
+
 //{funct7}, R-FLT-TYPE
 `define FADDS					7'b0000000
 `define FSUBS					7'b0000100
 `define FMULS					7'b0001000
 `define FDIVS					7'b0001100
 `define FSQRTS					7'b0101100
-`define FSGNJS					7'b0010000
-`define FSGNJNS					7'b0010000
-`define FSGNJXS					7'b0010000
-`define FMINS					7'b0010100
-`define FMAXS					7'b0010100
 `define FCVTWS					7'b1100000
 `define FCVTWUS					7'b1100000
-`define FMVXW					7'b1110000
-`define FEQS					7'b1010000
-`define FLTS					7'b1010000
-`define FLES					7'b1010000
-`define FCLASSS					7'b1110000
 `define FCVTSW					7'b1101000
 `define FCVTSWU					7'b1101000
-`define FMVWX					7'b1111000
 
 //{funct3}, I-TYPE
 `define ADDI_INST				3'h0
