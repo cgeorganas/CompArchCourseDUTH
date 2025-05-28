@@ -34,13 +34,13 @@
 `define I_BREAK_TYPE			7'b1110011
 `define I_LDFLT_TYPE			7'b0000111
 `define S_FLT_TYPE				7'b0100111
-`define R4_MADD_TYPE			7'b1000011
-`define R4_MSUB_TYPE			7'b1000111
-`define R4_NMSUB_TYPE			7'b1001011
-`define R4_NMADD_TYPE			7'b1001111
+// `define R4_MADD_TYPE			7'b1000011
+// `define R4_MSUB_TYPE			7'b1000111
+// `define R4_NMSUB_TYPE			7'b1001011
+// `define R4_NMADD_TYPE			7'b1001111
 `define R_FLT_TYPE				7'b1010011
 
-//{funct3, funct7}, R-TYPE
+//{funct3, funct7}, R_TYPE
 `define ADD_INST				{3'h0, 7'h00}
 `define SUB_INST				{3'h0, 7'h20}
 `define XOR_INST				{3'h4, 7'h00}
@@ -60,31 +60,31 @@
 `define REM_INST				{3'h6, 7'h01}
 `define REMU_INST				{3'h7, 7'h01}
 
-//{funct3, funct7}, R-FLT-TYPE
-`define FSGNJS					{3'b000, 7'b0010000}
-`define FSGNJNS					{3'b001, 7'b0010000}
-`define FSGNJXS					{3'b010, 7'b0010000}
-`define FMINS					{3'b000, 7'b0010100}
-`define FMAXS					{3'b001, 7'b0010100}
-`define FMVXW					{3'b000, 7'b1110000}
-`define FEQS					{3'b010, 7'b1010000}
-`define FLTS					{3'b001, 7'b1010000}
-`define FLES					{3'b000, 7'b1010000}
-`define FCLASSS					{3'b001, 7'b1110000}
-`define FMVWX					{3'b000, 7'b1111000}
+//{funct3, funct7}, R_FLT_TYPE
+// `define FSGNJS_INST				{3'b000, 7'b0010000}
+// `define FSGNJNS_INST			{3'b001, 7'b0010000}
+// `define FSGNJXS_INST			{3'b010, 7'b0010000}
+// `define FMINS_INST				{3'b000, 7'b0010100}
+// `define FMAXS_INST				{3'b001, 7'b0010100}
+`define FMVXW_INST				{3'b000, 7'b1110000}
+// `define FEQS_INST				{3'b010, 7'b1010000}
+// `define FLTS_INST				{3'b001, 7'b1010000}
+// `define FLES_INST				{3'b000, 7'b1010000}
+// `define FCLASSS_INST			{3'b001, 7'b1110000}
+`define FMVWX_INST				{3'b000, 7'b1111000}
 
-//{funct7}, R-FLT-TYPE
-`define FADDS					7'b0000000
-`define FSUBS					7'b0000100
-`define FMULS					7'b0001000
-`define FDIVS					7'b0001100
-`define FSQRTS					7'b0101100
-`define FCVTWS					7'b1100000
-`define FCVTWUS					7'b1100000
-`define FCVTSW					7'b1101000
-`define FCVTSWU					7'b1101000
+//{funct7}, R_FLT_TYPE
+// `define FADDS_INST				7'b0000000
+// `define FSUBS_INST				7'b0000100
+// `define FMULS_INST				7'b0001000
+// `define FDIVS_INST				7'b0001100
+// `define FSQRTS_INST				7'b0101100
+// `define FCVTWS_INST				7'b1100000
+// `define FCVTWUS_INST			7'b1100000
+// `define FCVTSW_INST				7'b1101000
+// `define FCVTSWU_INST			7'b1101000
 
-//{funct3}, I-TYPE
+//{funct3}, I_TYPE
 `define ADDI_INST				3'h0
 `define XORI_INST				3'h4
 `define ORI_INST				3'h6
@@ -101,12 +101,12 @@
 `define LBU_INST				3'h4
 `define LHU_INST				3'h5
 
-//{funct3}, S-TYPE
+//{funct3}, S_TYPE
 `define SB_INST					3'h0
 `define SH_INST					3'h1
 `define SW_INST					3'h2
 
-//{funct3}, B-TYPE
+//{funct3}, B_TYPE
 `define BEQ_INST				3'h0
 `define BNE_INST				3'h1
 `define DONT_BRANCH				3'h2
