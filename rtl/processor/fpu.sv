@@ -14,25 +14,36 @@ module fpu(
 	output logic			fpu_busy
 );
 
-logic [31:0] int2flt_input, int2flt_output;
-assign int2flt_output[31] = (ID_EX_alu_func==`ALU_FCVTSW)&&opa[31];
-assign int2flt_input = int2flt_output[31] ? -opa : opa;
+logic [31:0]	int2flt_input;
+logic [4:0]		int2flt_msb;
 
-logic [4:0] int2flt_input_msb;
+logic [31:0]	int2flt_output;
+logic 			int2flt_sign;
+logic [7:0]		int2flt_exponent;
+logic [30:0]	int2flt_mantissa;
+
+
 always_comb begin
-	int2flt_input_msb = 5'h0;
+
+	int2flt_sign = (ID_EX_alu_func==`ALU_FCVTSW)&&opa[31];
+	
+	int2flt_input = int2flt_sign ? -opa : opa;
+
+	int2flt_msb = 5'h0;
 	for (int i=0; i<32; i++) begin
-		if (int2flt_input[i]) int2flt_input_msb = i;
+		if (int2flt_input[i]) int2flt_msb = i;
 	end
+
+	int2flt_mantissa = int2flt_input << (31-int2flt_msb);
+
+	int2flt_exponent = int2flt_msb + 127;
+
+	int2flt_output = {int2flt_sign, int2flt_exponent, int2flt_mantissa[30:8]};
+
+	if (opa==32'h0)	int2flt_output = 32'h0;
 end
 
-logic [31:0] int2flt_mantissa;
-assign int2flt_mantissa = int2flt_input << (32-int2flt_input_msb);
-
-assign int2flt_output[30:23] = int2flt_input_msb + 127;
-assign int2flt_output[22:0] = int2flt_mantissa[31:9];
-
-assign fpu_res = (opa==32'h0) ? 32'h0 : int2flt_output;
+assign fpu_res = int2flt_output;
 assign fpu_busy = `FALSE;
 
 endmodule
