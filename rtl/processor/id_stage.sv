@@ -217,11 +217,12 @@ always_comb begin
 		end
 
 		`R_FLT_TYPE: begin
+			ID_imm		= {29'h0, funct3};
 			opa_sel		= `SEL_RS;
 			opb_sel		= `SEL_RS;
 			ID_vld		= IF_ID_vld;
 
-			case({funct3, funct7})
+			case({funct3, rs2, funct7})
 				`FMVXW_INST: begin
 					ID_rs1	= {`TRUE, rs1};
 					ID_rd	= {`FALSE, rd};

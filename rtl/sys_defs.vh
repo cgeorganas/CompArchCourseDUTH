@@ -60,29 +60,27 @@
 `define REM_INST				{3'h6, 7'h01}
 `define REMU_INST				{3'h7, 7'h01}
 
-//{funct3, funct7}, R_FLT_TYPE
-// `define FSGNJS_INST				{3'b000, 7'b0010000}
-// `define FSGNJNS_INST			{3'b001, 7'b0010000}
-// `define FSGNJXS_INST			{3'b010, 7'b0010000}
-// `define FMINS_INST				{3'b000, 7'b0010100}
-// `define FMAXS_INST				{3'b001, 7'b0010100}
-`define FMVXW_INST				{3'b000, 7'b1110000}
-// `define FEQS_INST				{3'b010, 7'b1010000}
-// `define FLTS_INST				{3'b001, 7'b1010000}
-// `define FLES_INST				{3'b000, 7'b1010000}
-// `define FCLASSS_INST			{3'b001, 7'b1110000}
-`define FMVWX_INST				{3'b000, 7'b1111000}
-
-//{funct7}, R_FLT_TYPE
-// `define FADDS_INST				7'b0000000
-// `define FSUBS_INST				7'b0000100
-// `define FMULS_INST				7'b0001000
-// `define FDIVS_INST				7'b0001100
-// `define FSQRTS_INST				7'b0101100
-// `define FCVTWS_INST				7'b1100000
-// `define FCVTWUS_INST			7'b1100000
-// `define FCVTSW_INST				7'b1101000
-// `define FCVTSWU_INST			7'b1101000
+//{funct3, rs2, funct7}, R_FLT_TYPE
+`define FADDS_INST				{2'b???, 5'b?????, 7'b0000000}
+`define FSUBS_INST				{2'b???, 5'b?????, 7'b0000100}
+`define FMULS_INST				{2'b???, 5'b?????, 7'b0001000}
+`define FDIVS_INST				{2'b???, 5'b?????, 7'b0001100}
+`define FSQRTS_INST				{2'b???, 5'b00000, 7'b0101100}
+`define FSGNJS_INST				{2'b000, 5'b?????, 7'b0010000}
+`define FSGNJNS_INST			{2'b001, 5'b?????, 7'b0010000}
+`define FSGNJXS_INST			{2'b010, 5'b?????, 7'b0010000}
+`define FMINS_INST				{2'b000, 5'b?????, 7'b0010100}
+`define FMAXS_INST				{2'b001, 5'b?????, 7'b0010100}
+`define FCVTWS_INST				{2'b???, 5'b00000, 7'b1100000}
+`define FCVTWUS_INST			{2'b???, 5'b00001, 7'b1100000}
+`define FMVXW_INST				{2'b000, 5'b00000, 7'b1110000}
+`define FEQS_INST				{2'b010, 5'b?????, 7'b1010000}
+`define FLTS_INST				{2'b001, 5'b?????, 7'b1010000}
+`define FLES_INST				{2'b000, 5'b?????, 7'b1010000}
+`define FCLASSS_INST			{2'b001, 5'b00000, 7'b1110000}
+`define FCVTSW_INST				{2'b???, 5'b00000, 7'b1101000}
+`define FCVTSWU_INST			{2'b???, 5'b00001, 7'b1101000}
+`define FMVWX_INST				{2'b000, 5'b00000, 7'b1111000}
 
 //{funct3}, I_TYPE
 `define ADDI_INST				3'h0
