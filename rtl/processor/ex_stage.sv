@@ -86,12 +86,15 @@ divider divider_0(
 //FPU
 logic fpu_busy;
 logic [31:0] fpu_res;
+logic [2:0] flt_rm;
+assign flt_rm = ID_EX_imm[2:0];
 fpu fpu_0(
 	.clk			(clk),
 	.rst			(rst),
 	.opa			(opa),
 	.opb			(opb),
 	.ID_EX_alu_func	(ID_EX_alu_func),
+	.flt_rm			(flt_rm),
 	.fpu_res		(fpu_res),
 	.fpu_busy		(fpu_busy)
 );
@@ -121,6 +124,8 @@ always_comb begin
 		`ALU_DIVU:		EX_alu_res = quotient;
 		`ALU_REM:		EX_alu_res = remainder;
 		`ALU_REMU:		EX_alu_res = remainder;
+		`ALU_FCVTSW:	EX_alu_res = fpu_res;
+		`ALU_FCVTSWU:	EX_alu_res = fpu_res;
 		default:		EX_vld = `FALSE;
 	endcase
 end

@@ -222,7 +222,7 @@ always_comb begin
 			opb_sel		= `SEL_RS;
 			ID_vld		= IF_ID_vld;
 
-			case({funct3, rs2, funct7})
+			casez({funct3, rs2, funct7})
 				`FMVXW_INST: begin
 					ID_rs1	= {`TRUE, rs1};
 					ID_rd	= {`FALSE, rd};
@@ -230,6 +230,16 @@ always_comb begin
 				`FMVWX_INST: begin
 					ID_rs1	= {`FALSE, rs1};
 					ID_rd	= {`TRUE, rd};
+				end
+				`FCVTSW_INST: begin
+					ID_rs1	= {`FALSE, rs1};
+					ID_rd	= {`TRUE, rd};
+					ID_alu_func = `ALU_FCVTSW;
+				end
+				`FCVTSWU_INST: begin
+					ID_rs1	= {`FALSE, rs1};
+					ID_rd	= {`TRUE, rd};
+					ID_alu_func = `ALU_FCVTSWU;
 				end
 				default: ID_vld = `FALSE;
 			endcase
