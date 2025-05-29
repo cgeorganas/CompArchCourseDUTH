@@ -23,7 +23,7 @@ module fpu(
 logic [31:0]	int2flt_input;
 logic [4:0]		int2flt_msb;
 
-logic [31:0]	int2flt_output;
+logic [39:0]	int2flt_output;
 logic 			int2flt_sign;
 logic [7:0]		int2flt_exponent;
 logic [30:0]	int2flt_mantissa;
@@ -43,30 +43,51 @@ always_comb begin
 
 	int2flt_exponent = int2flt_msb + 127;
 
-	if (|int2flt_mantissa[7:0]) begin
-		casez ({int2flt_sign, flt_rm})
+	int2flt_output = {int2flt_sign, int2flt_exponent, int2flt_mantissa};
+
+	if (opa==32'h0)	int2flt_output = 40'h0;
+end
+
+logic [39:0]	fpu_longres;
+assign fpu_longres = int2flt_output;
+
+logic			fpu_longres_sign;
+logic [7:0]		fpu_longres_exponent;
+logic [22:0]	fpu_longres_mantissa;
+
+logic guard, round, sticky;
+assign guard = fpu_longres[7];
+assign round = fpu_longres[6];
+assign sticky = |fpu_longres[5:0];
+
+always_comb begin
+
+	fpu_longres_sign		= fpu_longres[39];
+	fpu_longres_exponent	= fpu_longres[38:31];
+	fpu_longres_mantissa	= fpu_longres[30:8];
+
+	casez ({fpu_longres_sign, flt_rm})
 
 			{`FALSE, `RUP}, {`TRUE, `RDN}: begin
-				int2flt_mantissa = int2flt_mantissa + 9'h100;
-				if (int2flt_mantissa[30:8]==23'h0) int2flt_exponent = int2flt_exponent + 1;
-			end
-
-			{1'b?, `RMM}: begin
-				if (int2flt_mantissa[7]) begin
-					int2flt_mantissa = int2flt_mantissa + 9'h100;
-					if (int2flt_mantissa[30:8]==23'h0) int2flt_exponent = int2flt_exponent + 1;
+				if (guard||round||sticky) begin
+					fpu_longres_mantissa = fpu_longres_mantissa + 1;
+					if (fpu_longres_mantissa==23'h0) fpu_longres_exponent = fpu_longres_exponent + 1;
 				end
 			end
 
-		endcase
-	end
+			{1'b?, `RMM}: begin
+				if (guard) begin
+					fpu_longres_mantissa = fpu_longres_mantissa + 1;
+					if (fpu_longres_mantissa==23'h0) fpu_longres_exponent = fpu_longres_exponent + 1;
+				end
+			end
 
-	int2flt_output = {int2flt_sign, int2flt_exponent, int2flt_mantissa[30:8]};
+	endcase
 
-	if (opa==32'h0)	int2flt_output = 32'h0;
 end
 
-assign fpu_res = int2flt_output;
+assign fpu_res = {fpu_longres_sign, fpu_longres_exponent, fpu_longres_mantissa};
+
 assign fpu_busy = `FALSE;
 
 endmodule
