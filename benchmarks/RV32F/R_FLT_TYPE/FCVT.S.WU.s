@@ -285,3 +285,32 @@ fcvt.s.wu	f1, a1, rmm
 fmv.x.w		a2, f1
 li			a3, 0x4f000000
 xor			a0, a2, a3
+
+
+
+li			a1, 0xffffffff
+
+fcvt.s.wu	f1, a1, rne
+fmv.x.w		a2, f1
+li			a3, 0x4f800000
+xor			a0, a2, a3
+
+fcvt.s.wu	f1, a1, rtz
+fmv.x.w		a2, f1
+li			a3, 0x4f7fffff
+xor			a0, a2, a3
+
+fcvt.s.wu	f1, a1, rdn
+fmv.x.w		a2, f1
+li			a3, 0x4f7fffff
+xor			a0, a2, a3
+
+fcvt.s.wu	f1, a1, rup
+fmv.x.w		a2, f1
+li			a3, 0x4f800000
+xor			a0, a2, a3
+
+fcvt.s.wu	f1, a1, rmm
+fmv.x.w		a2, f1
+li			a3, 0x4f800000
+xor			a0, a2, a3

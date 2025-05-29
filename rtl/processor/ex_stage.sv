@@ -92,18 +92,18 @@ fpu_int2flt fpu_int2flt_0(
 	.out			(fpu_int2flt)
 );
 
-logic [34:0] fpu_flt2int;
+logic [31:0] fpu_flt2int;
 fpu_flt2int fpu_flt2int_0(
 	.in				(opa),
 	.is_signed		(ID_EX_alu_func==`ALU_FCVTWS),
+	.rm				(ID_EX_imm[2:0]),
 	.out			(fpu_flt2int)
 );
 
 logic [34:0] fpu_res_raw;
 always_comb begin
 	case (ID_EX_alu_func)
-		`ALU_FCVTWS, `ALU_FCVTWUS:	fpu_res_raw = fpu_flt2int;
-		default:					fpu_res_raw = fpu_int2flt;
+		default:	fpu_res_raw = fpu_int2flt;
 	endcase
 end
 logic [31:0] fpu_res;
@@ -138,8 +138,8 @@ always_comb begin
 		`ALU_REMU:		EX_alu_res = remainder;
 		`ALU_FCVTSW:	EX_alu_res = fpu_res;
 		`ALU_FCVTSWU:	EX_alu_res = fpu_res;
-		`ALU_FCVTWS:	EX_alu_res = fpu_res;
-		`ALU_FCVTWUS:	EX_alu_res = fpu_res;
+		`ALU_FCVTWS:	EX_alu_res = fpu_flt2int;
+		`ALU_FCVTWUS:	EX_alu_res = fpu_flt2int;
 		default:		EX_vld = `FALSE;
 	endcase
 end
