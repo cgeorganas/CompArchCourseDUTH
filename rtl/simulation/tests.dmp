@@ -5,8 +5,14 @@ tests.o:     file format elf32-littleriscv
 Disassembly of section .text:
 
 00000000 <.text>:
-   0:	01800593          	li	a1,24
-   4:	d005f0d3          	fcvt.s.w	ft1,a1
-   8:	e0008653          	fmv.x.w	a2,ft1
-   c:	41c006b7          	lui	a3,0x41c00
-  10:	00d64533          	xor	a0,a2,a3
+   0:	010005b7          	lui	a1,0x1000
+   4:	00158593          	addi	a1,a1,1 # 1000001 <.text+0x1000001>
+   8:	d005a0d3          	fcvt.s.w	ft1,a1,rdn
+   c:	e0008653          	fmv.x.w	a2,ft1
+  10:	4b8006b7          	lui	a3,0x4b800
+  14:	00d64533          	xor	a0,a2,a3
+  18:	d005b0d3          	fcvt.s.w	ft1,a1,rup
+  1c:	e0008653          	fmv.x.w	a2,ft1
+  20:	4b8006b7          	lui	a3,0x4b800
+  24:	00168693          	addi	a3,a3,1 # 4b800001 <.text+0x4b800001>
+  28:	00d64533          	xor	a0,a2,a3

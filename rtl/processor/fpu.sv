@@ -2,6 +2,12 @@
 	`include "../sys_defs.vh"
 `endif
 
+`define RNE 3'b000
+`define RTZ 3'b001
+`define RDN 3'b010
+`define RUP 3'b011
+`define RMM 3'b100
+
 module fpu(
 	input	logic			clk,
 	input	logic			rst,
@@ -22,7 +28,6 @@ logic 			int2flt_sign;
 logic [7:0]		int2flt_exponent;
 logic [30:0]	int2flt_mantissa;
 
-
 always_comb begin
 
 	int2flt_sign = (ID_EX_alu_func==`ALU_FCVTSW)&&opa[31];
@@ -37,6 +42,15 @@ always_comb begin
 	int2flt_mantissa = int2flt_input << (31-int2flt_msb);
 
 	int2flt_exponent = int2flt_msb + 127;
+
+	if (|int2flt_mantissa[7:0]) begin
+		case ({int2flt_sign, flt_rm})
+			{`FALSE, `RUP}, {`TRUE, `RDN}: begin
+				int2flt_mantissa = int2flt_mantissa + 9'h100;
+				if (int2flt_mantissa[30:8]==23'h0) int2flt_exponent = int2flt_exponent + 1;
+			end
+		endcase
+	end
 
 	int2flt_output = {int2flt_sign, int2flt_exponent, int2flt_mantissa[30:8]};
 
