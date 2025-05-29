@@ -48,45 +48,43 @@ always_comb begin
 	if (opa==32'h0)	int2flt_output = 40'h0;
 end
 
-logic [39:0]	fpu_longres;
+logic [39:0] fpu_longres;
 assign fpu_longres = int2flt_output;
 
-logic			fpu_longres_sign;
-logic [7:0]		fpu_longres_exponent;
-logic [22:0]	fpu_longres_mantissa;
+logic			fpu_res_sign;
+logic [7:0]		fpu_res_exponent;
+logic [22:0]	fpu_res_mantissa;
 
 logic guard, round, sticky;
 assign guard = fpu_longres[7];
 assign round = fpu_longres[6];
 assign sticky = |fpu_longres[5:0];
 
+logic round_up;
+
 always_comb begin
 
-	fpu_longres_sign		= fpu_longres[39];
-	fpu_longres_exponent	= fpu_longres[38:31];
-	fpu_longres_mantissa	= fpu_longres[30:8];
+	fpu_res_sign		= fpu_longres[39];
+	fpu_res_exponent	= fpu_longres[38:31];
+	fpu_res_mantissa	= fpu_longres[30:8];
 
-	casez ({fpu_longres_sign, flt_rm})
+	round_up = `FALSE;
 
-			{`FALSE, `RUP}, {`TRUE, `RDN}: begin
-				if (guard||round||sticky) begin
-					fpu_longres_mantissa = fpu_longres_mantissa + 1;
-					if (fpu_longres_mantissa==23'h0) fpu_longres_exponent = fpu_longres_exponent + 1;
-				end
-			end
-
-			{1'b?, `RMM}: begin
-				if (guard) begin
-					fpu_longres_mantissa = fpu_longres_mantissa + 1;
-					if (fpu_longres_mantissa==23'h0) fpu_longres_exponent = fpu_longres_exponent + 1;
-				end
-			end
-
+	case (flt_rm)
+		`RNE: round_up = ((guard&&(round||sticky))||(guard&&(~round)&&(~sticky)&&fpu_res_mantissa[0]));
+		`RUP: round_up = ((guard||round||sticky)&&(~fpu_res_sign));
+		`RDN: round_up = ((guard||round||sticky)&&(fpu_res_sign));
+		`RMM: round_up = (guard);
 	endcase
+
+	if (round_up) begin
+		fpu_res_mantissa = fpu_res_mantissa + 1;
+		if (fpu_res_mantissa==23'h0) fpu_res_exponent = fpu_res_exponent + 1;
+	end
 
 end
 
-assign fpu_res = {fpu_longres_sign, fpu_longres_exponent, fpu_longres_mantissa};
+assign fpu_res = {fpu_res_sign, fpu_res_exponent, fpu_res_mantissa};
 
 assign fpu_busy = `FALSE;
 
