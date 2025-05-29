@@ -16,3 +16,24 @@ Disassembly of section .text:
   20:	4b8006b7          	lui	a3,0x4b800
   24:	00168693          	addi	a3,a3,1 # 4b800001 <.text+0x4b800001>
   28:	00d64533          	xor	a0,a2,a3
+  2c:	d005c0d3          	fcvt.s.w	ft1,a1,rmm
+  30:	e0008653          	fmv.x.w	a2,ft1
+  34:	4b8006b7          	lui	a3,0x4b800
+  38:	00168693          	addi	a3,a3,1 # 4b800001 <.text+0x4b800001>
+  3c:	00d64533          	xor	a0,a2,a3
+  40:	ff0005b7          	lui	a1,0xff000
+  44:	fff58593          	addi	a1,a1,-1 # feffffff <.text+0xfeffffff>
+  48:	d005a0d3          	fcvt.s.w	ft1,a1,rdn
+  4c:	e0008653          	fmv.x.w	a2,ft1
+  50:	cb8006b7          	lui	a3,0xcb800
+  54:	00168693          	addi	a3,a3,1 # cb800001 <.text+0xcb800001>
+  58:	00d64533          	xor	a0,a2,a3
+  5c:	d005b0d3          	fcvt.s.w	ft1,a1,rup
+  60:	e0008653          	fmv.x.w	a2,ft1
+  64:	cb8006b7          	lui	a3,0xcb800
+  68:	00d64533          	xor	a0,a2,a3
+  6c:	d005c0d3          	fcvt.s.w	ft1,a1,rmm
+  70:	e0008653          	fmv.x.w	a2,ft1
+  74:	cb8006b7          	lui	a3,0xcb800
+  78:	00168693          	addi	a3,a3,1 # cb800001 <.text+0xcb800001>
+  7c:	00d64533          	xor	a0,a2,a3

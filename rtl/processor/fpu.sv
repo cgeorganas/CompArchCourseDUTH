@@ -44,11 +44,20 @@ always_comb begin
 	int2flt_exponent = int2flt_msb + 127;
 
 	if (|int2flt_mantissa[7:0]) begin
-		case ({int2flt_sign, flt_rm})
+		casez ({int2flt_sign, flt_rm})
+
 			{`FALSE, `RUP}, {`TRUE, `RDN}: begin
 				int2flt_mantissa = int2flt_mantissa + 9'h100;
 				if (int2flt_mantissa[30:8]==23'h0) int2flt_exponent = int2flt_exponent + 1;
 			end
+
+			{1'b?, `RMM}: begin
+				if (int2flt_mantissa[7]) begin
+					int2flt_mantissa = int2flt_mantissa + 9'h100;
+					if (int2flt_mantissa[30:8]==23'h0) int2flt_exponent = int2flt_exponent + 1;
+				end
+			end
+
 		endcase
 	end
 
