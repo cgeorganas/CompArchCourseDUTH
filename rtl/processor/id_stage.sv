@@ -241,6 +241,16 @@ always_comb begin
 					ID_rd	= {`TRUE, rd};
 					ID_alu_func = `ALU_FCVTSWU;
 				end
+				`FCVTWS_INST: begin
+					ID_rs1	= {`TRUE, rs1};
+					ID_rd	= {`FALSE, rd};
+					ID_alu_func = `ALU_FCVTWS;
+				end
+				`FCVTWUS_INST: begin
+					ID_rs1	= {`TRUE, rs1};
+					ID_rd	= {`FALSE, rd};
+					ID_alu_func = `ALU_FCVTWUS;
+				end
 				default: ID_vld = `FALSE;
 			endcase
 

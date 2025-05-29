@@ -82,6 +82,7 @@ divider divider_0(
 	.remainder		(remainder),
 	.divider_busy	(divider_busy)
 );
+assign EX_alu_busy = divider_busy;
 
 //FPU
 logic [34:0] fpu_int2flt;
@@ -91,14 +92,26 @@ fpu_int2flt fpu_int2flt_0(
 	.out			(fpu_int2flt)
 );
 
-logic [31:0] fpu_rounded;
-fpu_round fpu_round_0 (
-	.in				(fpu_int2flt),
-	.rm				(ID_EX_imm[2:0]),
-	.out			(fpu_rounded)
+logic [34:0] fpu_flt2int;
+fpu_flt2int fpu_flt2int_0(
+	.in				(opa),
+	.is_signed		(ID_EX_alu_func==`ALU_FCVTWS),
+	.out			(fpu_flt2int)
 );
 
-assign EX_alu_busy = divider_busy;
+logic [34:0] fpu_res_raw;
+always_comb begin
+	case (ID_EX_alu_func)
+		`ALU_FCVTWS, `ALU_FCVTWUS:	fpu_res_raw = fpu_flt2int;
+		default:					fpu_res_raw = fpu_int2flt;
+	endcase
+end
+logic [31:0] fpu_res;
+fpu_round fpu_round_0 (
+	.in				(fpu_res_raw),
+	.rm				(ID_EX_imm[2:0]),
+	.out			(fpu_res)
+);
 
 //ALU block
 always_comb begin
@@ -123,8 +136,10 @@ always_comb begin
 		`ALU_DIVU:		EX_alu_res = quotient;
 		`ALU_REM:		EX_alu_res = remainder;
 		`ALU_REMU:		EX_alu_res = remainder;
-		`ALU_FCVTSW:	EX_alu_res = fpu_rounded;
-		`ALU_FCVTSWU:	EX_alu_res = fpu_rounded;
+		`ALU_FCVTSW:	EX_alu_res = fpu_res;
+		`ALU_FCVTSWU:	EX_alu_res = fpu_res;
+		`ALU_FCVTWS:	EX_alu_res = fpu_res;
+		`ALU_FCVTWUS:	EX_alu_res = fpu_res;
 		default:		EX_vld = `FALSE;
 	endcase
 end

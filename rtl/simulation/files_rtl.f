@@ -5,6 +5,7 @@
 ../processor/divider.sv
 ../processor/fpu_round.sv
 ../processor/fpu_int2flt.sv
+../processor/fpu_flt2int.sv
 ../processor/ex_stage.sv
 ../processor/mem_stage.sv
 ../processor/wb_stage.sv
