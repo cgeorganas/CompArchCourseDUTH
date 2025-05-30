@@ -10,10 +10,13 @@
 
 module fpu_flt2int(
 	input	logic	[31:0]	in,
-	input	logic			is_signed,
+	input	logic			signed_output,
 	input	logic	[2:0]	rm,
 	output	logic	[31:0]	out
 );
+
+logic			sign;
+assign			sign = in[31];
 
 logic [7:0]		exponent;
 assign			exponent = in[30:23];
@@ -25,19 +28,14 @@ logic [57:0]	fixed_initial, fixed; // Fixed point intermediate res, 32 integer b
 assign			fixed_initial = {35'h1, mantissa};
 
 always_comb begin
-	if (in[30:0]==31'h0)
-		fixed = {58'h0};
-	else if (exponent<124)
-		fixed = {58'h1};
-	else if (exponent<159)
-		fixed = fixed_initial << (exponent-124);
-	else
-		fixed = {32'hffff_ffff, 26'h0};
+	if (in[30:0]==31'h0)	fixed = {58'h0};							// Zeros
+	else if (exponent<124)	fixed = {58'h1};							// Too small for fixed point range
+	else if (exponent<159)	fixed = fixed_initial << (exponent-124);	// OK
+	else					fixed = {32'hffff_ffff, 26'h0};				// Too big for fixed point range
 end
 
 logic round_up;
-logic sign, g, r, s, lsb;
-assign sign = in[31];
+logic lsb, g, r, s;
 assign lsb	= fixed[26];
 assign g	= fixed[25];
 assign r	= fixed[24];
@@ -56,12 +54,8 @@ end
 logic [31:0]	out_abs;
 assign			out_abs = fixed[57:26] + ((round_up)&&(~(&fixed[57:26])));
 
-logic sign_in, sign_out;
-assign sign_in = sign;
-assign sign_out = is_signed;
-
 always_comb begin
-	case ({sign_in, sign_out})
+	case ({sign, signed_output})
 		2'b11:		out = (out_abs>32'h7fff_ffff) ? 32'h8000_0000 : -out_abs;
 		2'b10:		out = 32'h0;
 		2'b01:		out = (out_abs>32'h7fff_ffff) ? 32'h7fff_ffff : out_abs;

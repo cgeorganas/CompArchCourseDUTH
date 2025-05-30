@@ -4,12 +4,12 @@
 
 module fpu_int2flt(
 	input	logic	[31:0]	in,
-	input	logic			is_signed,
+	input	logic			signed_input,
 	output	logic	[34:0]	out
 );
 
 logic			sign;
-assign			sign = is_signed&&in[31];
+assign			sign = signed_input&&in[31];
 
 logic [31:0]	in_abs;
 assign			in_abs = sign ? -in : in;

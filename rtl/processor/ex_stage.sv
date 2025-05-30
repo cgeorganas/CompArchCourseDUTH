@@ -88,15 +88,15 @@ assign EX_alu_busy = divider_busy;
 logic [34:0] fpu_int2flt;
 fpu_int2flt fpu_int2flt_0(
 	.in				(opa),
-	.is_signed		(ID_EX_alu_func==`ALU_FCVTSW),
+	.signed_input	(ID_EX_alu_func==`ALU_FCVTSW),
 	.out			(fpu_int2flt)
 );
 
 logic [31:0] fpu_flt2int;
 fpu_flt2int fpu_flt2int_0(
 	.in				(opa),
-	.is_signed		(ID_EX_alu_func==`ALU_FCVTWS),
 	.rm				(ID_EX_imm[2:0]),
+	.signed_output	(ID_EX_alu_func==`ALU_FCVTWS),
 	.out			(fpu_flt2int)
 );
 
