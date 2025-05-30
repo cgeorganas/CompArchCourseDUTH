@@ -25,9 +25,9 @@ logic [57:0]	fixed_initial, fixed; // Fixed point intermediate res, 32 integer b
 assign			fixed_initial = {35'h1, mantissa};
 
 always_comb begin
-	if (in==32'h0)
+	if (in[30:0]==31'h0)
 		fixed = {58'h0};
-	else if (exponent<123)
+	else if (exponent<124)
 		fixed = {58'h1};
 	else if (exponent<159)
 		fixed = fixed_initial << (exponent-124);
@@ -62,7 +62,7 @@ assign sign_out = is_signed;
 
 always_comb begin
 	case ({sign_in, sign_out})
-		2'b11:		out = -out_abs;
+		2'b11:		out = (out_abs>32'h7fff_ffff) ? 32'h8000_0000 : -out_abs;
 		2'b10:		out = 32'h0;
 		2'b01:		out = (out_abs>32'h7fff_ffff) ? 32'h7fff_ffff : out_abs;
 		default:	out = out_abs;
