@@ -1,19 +1,19 @@
 ../sys_defs.vh
 
-../processor/if_stage.sv
-../processor/id_stage.sv
-../processor/multiplier.sv
-../processor/divider.sv
-../processor/fpu_round.sv
-../processor/fpu_int2flt.sv
-../processor/fpu_flt2int.sv
-../processor/fpu_mult.sv
-../processor/fpu.sv
-../processor/ex_stage.sv
-../processor/mem_stage.sv
-../processor/wb_stage.sv
-../processor/register_file.sv
-../processor/stall.sv
+../processor/processor.d/ex_stage.d/fpu.d/fpu_flt2int.sv
+../processor/processor.d/ex_stage.d/fpu.d/fpu_int2flt.sv
+../processor/processor.d/ex_stage.d/fpu.d/fpu_mult.sv
+../processor/processor.d/ex_stage.d/fpu.d/fpu_round.sv
+../processor/processor.d/ex_stage.d/fpu.sv
+../processor/processor.d/ex_stage.d/multiplier.sv
+../processor/processor.d/ex_stage.d/divider.sv
+../processor/processor.d/ex_stage.sv
+../processor/processor.d/if_stage.sv
+../processor/processor.d/id_stage.sv
+../processor/processor.d/mem_stage.sv
+../processor/processor.d/wb_stage.sv
+../processor/processor.d/register_file.sv
+../processor/processor.d/stall.sv
 ../processor/processor.sv
 
 inst_mem.sv
