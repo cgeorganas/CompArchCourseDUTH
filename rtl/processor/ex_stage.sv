@@ -97,9 +97,18 @@ fpu_flt2int fpu_flt2int_0(
 	.out			(fpu_flt2int)
 );
 
+logic [34:0] fpu_mult;
+fpu_mult fpu_mult_0(
+	.opa			(opa),
+	.opb			(opb),
+	.mult_result	(mult_result[47:0]),
+	.out			(fpu_mult)
+);
+
 logic [34:0] fpu_res_raw;
 always_comb begin
 	case (ID_EX_alu_func)
+		`ALU_FMULS:	fpu_res_raw = fpu_mult;
 		default:	fpu_res_raw = fpu_int2flt;
 	endcase
 end
@@ -137,6 +146,7 @@ always_comb begin
 		`ALU_FCVTSWU:	EX_alu_res = fpu_res;
 		`ALU_FCVTWS:	EX_alu_res = fpu_flt2int;
 		`ALU_FCVTWUS:	EX_alu_res = fpu_flt2int;
+		`ALU_FMULS:		EX_alu_res = fpu_res;
 		default:		EX_vld = `FALSE;
 	endcase
 end

@@ -14,6 +14,11 @@ logic signed [32:0] mult_opa, mult_opb; //"Sign extended" operands. The 33rd bit
 always_comb begin
 	case (ID_EX_alu_func)
 	
+	`ALU_FMULS: begin
+		mult_opa = {10'h1, opa[22:0]};
+		mult_opb = {10'h1, opa[22:0]};
+	end
+
 	`ALU_MULH: begin
 		mult_opa = {opa[31], opa};
 		mult_opb = {opb[31], opb};

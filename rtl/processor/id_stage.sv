@@ -251,6 +251,12 @@ always_comb begin
 					ID_rd	= {`FALSE, rd};
 					ID_alu_func = `ALU_FCVTWUS;
 				end
+				`FMULS_INST: begin
+					ID_rs1	= {`TRUE, rs1};
+					ID_rs2	= {`TRUE, rs2};
+					ID_rd	= {`TRUE, rd};
+					ID_alu_func = `ALU_FMULS;
+				end
 				default: ID_vld = `FALSE;
 			endcase
 
