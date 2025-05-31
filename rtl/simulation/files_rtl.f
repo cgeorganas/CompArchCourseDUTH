@@ -2,6 +2,7 @@
 
 ../processor/if_stage.sv
 ../processor/id_stage.sv
+../processor/multiplier.sv
 ../processor/divider.sv
 ../processor/fpu_round.sv
 ../processor/fpu_int2flt.sv

@@ -58,16 +58,13 @@ end
 assign EX_mem_din = rs2_data;
 
 //Multiplier
-logic sign_opa, sign_opb;
-assign sign_opb = (ID_EX_alu_func==`ALU_MULH);
-assign sign_opa = (ID_EX_alu_func==`ALU_MULHSU)||(sign_opb);
-
-logic signed [32:0] mult_opa, mult_opb; //"Sign extended" operands. The 33rd bit overwrites the sign
-assign mult_opa = {sign_opa&&opa[31],opa};
-assign mult_opb = {sign_opb&&opb[31],opb};
-
 logic signed [65:0] mult_result;
-assign mult_result = mult_opa * mult_opb;
+multipler multipler_0(
+	.opa			(opa),
+	.opb			(opb),
+	.ID_EX_alu_func	(ID_EX_alu_func),
+	.mult_result	(mult_result)
+);
 
 //Divider
 logic divider_busy;
