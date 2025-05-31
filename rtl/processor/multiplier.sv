@@ -15,8 +15,8 @@ always_comb begin
 	case (ID_EX_alu_func)
 	
 	`ALU_FMULS: begin
-		mult_opa = {10'h1, opa[22:0]};
-		mult_opb = {10'h1, opa[22:0]};
+		mult_opa = {9'h0, (|opa[30:23]), opa[22:0]};
+		mult_opb = {9'h0, (|opb[30:23]), opb[22:0]};
 	end
 
 	`ALU_MULH: begin
