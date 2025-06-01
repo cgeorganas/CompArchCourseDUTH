@@ -31,7 +31,7 @@ always_ff @(posedge clk) begin
 end
 
 logic new_input;
-assign new_input = (prev_opa!=opa)&&(prev_opb!=opb)&&(prev_func!=ID_EX_alu_func);
+assign new_input = (prev_opa!=opa)||(prev_opb!=opb)||(prev_func!=ID_EX_alu_func);
 
 logic [34:0] fpu_int2flt;
 fpu_int2flt fpu_int2flt_0(

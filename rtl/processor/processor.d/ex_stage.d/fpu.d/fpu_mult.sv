@@ -13,12 +13,13 @@ module fpu_mult(
 	output	logic			fpu_mult_busy
 );
 
+
+
 // SUBNORMAL FLAG
 logic			subn_fl_a, subn_fl_b, subn_fl;
 assign			subn_fl_a	= (~(|opa[30:23]))&&(|opa[22:0]);
 assign			subn_fl_b	= (~(|opb[30:23]))&&(|opb[22:0]);
 assign			subn_fl		= subn_fl_a||subn_fl_b;
-
 
 // ZERO FLAG
 logic			z_fl_a, z_fl_b, z_fl;
@@ -26,13 +27,11 @@ assign			z_fl_a		= ~(|opa[30:0]);
 assign			z_fl_b		= ~(|opb[30:0]);
 assign			z_fl		= z_fl_a||z_fl_b;
 
-
 // INF FLAG
 logic			inf_fl_a, inf_fl_b, inf_fl;
 assign			inf_fl_a	= (&opa[30:23])&&(~(|opa[22:0]));
 assign			inf_fl_b	= (&opb[30:23])&&(~(|opb[22:0]));
 assign			inf_fl		= inf_fl_a||inf_fl_b;
-
 
 // NAN FLAG
 logic			nan_fl_a, nan_fl_b, nan_fl;
@@ -40,10 +39,10 @@ assign			nan_fl_a = (&opa[30:23])&&(|opa[22:0]);
 assign			nan_fl_b = (&opb[30:23])&&(|opb[22:0]);
 assign			nan_fl = nan_fl_a||nan_fl_b;
 
-
 // SPECIAL CASE FLAG
 logic			sc_fl;
 assign			sc_fl = z_fl||inf_fl||nan_fl;
+
 
 
 // OUTPUT SIGN
@@ -51,67 +50,79 @@ logic			sign;
 assign			sign = opa[31]^opb[31];
 
 
+
 // OUTPUT EXPONENT
 // 9 bit sum, the bias becomes 254
 // Anything below 128 is subnormal, anything above 381 causes an overflow
-logic [8:0]		exp_sum;
-assign			exp_sum = {1'b0, opa[30:23]} + {1'b0, opb[30:23]} + {8'h0, subn_fl_a} + {8'h0, subn_fl_b};
-
-logic [8:0]		exp;
-
-logic			ovf_fl, unf_fl;
-assign			ovf_fl = (exp_sum>381);
-assign			unf_fl = (exp_sum<129)&&(~mult_result[46]);
+logic [8:0]		exp_initial, exp, exp_out;
+assign			exp_initial = {1'b0, opa[30:23]} + {1'b0, opb[30:23]} + {8'h0, subn_fl_a} + {8'h0, subn_fl_b};
+assign			exp_out = exp - 126;
 
 
 // OUTPUT MANTISSA
-// Normalise multiplication result
-logic [47:0]	mult_result_norm;
-assign			fpu_mult_busy = (~mult_result_norm[47])&&(~sc_fl);
+logic [47:0]	mant;
+
+// Busy until MSB is 1
+assign			fpu_mult_busy = (new_input)||((~mant[47])&&(~sc_fl));
 
 always_ff @(posedge clk) begin
 	if (rst) begin
-		mult_result_norm	<= 48'h0;
-		exp					<= 9'h0;
+		mant	<= 48'h0;
+		exp		<= 9'h0;
 	end
 	else begin
 		if (new_input) begin
-			mult_result_norm	<= mult_result;
-			exp					<= exp_sum - 126;
+			mant	<= mult_result;
+			exp		<= exp_initial;
 		end
 		else if (fpu_mult_busy) begin
-			mult_result_norm	<= mult_result_norm << 1;
-			exp					<= exp - 1;
+			mant	<= mant << 1;
+			exp		<= exp - 1;
 		end
 	end
 end
 
-// Throw away the implied leading 1
-logic [25:0]	mant;
-assign			mant = {mult_result_norm[46:22], |mult_result_norm[21:0]};
-
-logic [47:0]	subn_mult_res;
-assign			subn_mult_res = mult_result >> (128-exp_sum);
-
-logic [25:0]	subn_mant;
-assign			subn_mant = {subn_mult_res[45:21], |subn_mult_res[20:0]};
 
 
-// OUTPUT CALCULATION
-logic [34:0] normal_out, ovf_out, unf_out;
+// OVERFLOW/UNDERFLOW DETECTION
+logic			ovf_fl, unf_fl;
+assign			ovf_fl	= (exp>381);
+assign			unf_fl	= (exp<104);
 
-assign			normal_out	= {sign, exp[7:0], mant};
-assign			ovf_out		= {sign, 8'hff, 26'h0};
-assign			unf_out		= {sign, 8'h00, subn_mant};
 
-always_comb begin	
+
+// SUBNORMAL ADJUSTMENT
+logic			subn_res_fl;
+assign			subn_res_fl = (exp<127);
+
+logic	[47:0]	subn_mant;
+assign			subn_mant = mant >> (126-exp);
+
+
+
+// OUTPUT SELECTION
+logic [34:0] normal_out;
+
+always_comb begin
+
+	if (ovf_fl)
+		normal_out = {sign, 8'hff, 23'h0, 3'b000};
+	else if (unf_fl)
+		normal_out = {sign, 8'h00, 23'h0, 3'b001};
+	else if (subn_res_fl)
+		normal_out = {sign, 8'h00, subn_mant[47:23], |subn_mant[22:0]};
+	else
+		normal_out = {sign, exp_out[7:0], mant[46:22], |mant[21:0]};
+
+
 	case ({nan_fl, inf_fl, z_fl})
-		3'b000:		out = ovf_fl ? ovf_out : (unf_fl ? unf_out : normal_out);	// Normal output
+		3'b000:		out = normal_out;											// Normal output
 		3'b001:		out = {sign, 34'h0};										// Zero * anything = Zero
 		3'b010:		out = {sign, 8'hff, 26'h0};									// Inf * anything = Inf
 		3'b011:		out = {1'b0, 9'h1ff, 22'h1, 3'h0};							// Zero * inf = qNaN
-		default:	out = nan_fl_a ? {opa, 3'h0} : {opb, 3'h0};					// If NaN input, send it to output
+		default:	out = (opa[30:0]>opb[30:0]) ? {opa, 3'h0} : {opb, 3'h0};	// If NaN input, send it to output
 	endcase
+
 end
 
 endmodule
