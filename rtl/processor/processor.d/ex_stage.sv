@@ -79,18 +79,23 @@ divider divider_0(
 	.remainder		(remainder),
 	.divider_busy	(divider_busy)
 );
-assign EX_alu_busy = divider_busy;
 
 //FPU
 logic [31:0] fpu_res;
+logic fpu_busy;
 fpu fpu_0(
+	.clk			(clk),
+	.rst			(rst),
 	.opa			(opa),
 	.opb			(opb),
 	.mult_result	(mult_result[47:0]),
 	.ID_EX_alu_func	(ID_EX_alu_func),
 	.rm				(ID_EX_imm[2:0]),
-	.fpu_res		(fpu_res)
+	.fpu_res		(fpu_res),
+	.fpu_busy		(fpu_busy)
 );
+
+assign EX_alu_busy = divider_busy||fpu_busy;
 
 //ALU block
 always_comb begin
