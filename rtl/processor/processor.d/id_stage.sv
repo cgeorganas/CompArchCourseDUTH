@@ -257,6 +257,18 @@ always_comb begin
 					ID_rd	= {`TRUE, rd};
 					ID_alu_func = `ALU_FMULS;
 				end
+				`FADDS_INST: begin
+					ID_rs1	= {`TRUE, rs1};
+					ID_rs2	= {`TRUE, rs2};
+					ID_rd	= {`TRUE, rd};
+					ID_alu_func = `ALU_FADDS;
+				end
+				`FSUBS_INST: begin
+					ID_rs1	= {`TRUE, rs1};
+					ID_rs2	= {`TRUE, rs2};
+					ID_rd	= {`TRUE, rd};
+					ID_alu_func = `ALU_FSUBS;
+				end
 				default: ID_vld = `FALSE;
 			endcase
 

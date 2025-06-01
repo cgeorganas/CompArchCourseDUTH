@@ -3,6 +3,7 @@
 ../processor/processor.d/ex_stage.d/fpu.d/fpu_flt2int.sv
 ../processor/processor.d/ex_stage.d/fpu.d/fpu_int2flt.sv
 ../processor/processor.d/ex_stage.d/fpu.d/fpu_mult.sv
+../processor/processor.d/ex_stage.d/fpu.d/fpu_add.sv
 ../processor/processor.d/ex_stage.d/fpu.d/fpu_round.sv
 ../processor/processor.d/ex_stage.d/fpu.sv
 ../processor/processor.d/ex_stage.d/multiplier.sv

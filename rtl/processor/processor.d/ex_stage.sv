@@ -125,6 +125,8 @@ always_comb begin
 		`ALU_FCVTWS:	EX_alu_res = fpu_res;
 		`ALU_FCVTWUS:	EX_alu_res = fpu_res;
 		`ALU_FMULS:		EX_alu_res = fpu_res;
+		`ALU_FADDS:		EX_alu_res = fpu_res;
+		`ALU_FSUBS:		EX_alu_res = fpu_res;
 		default:		EX_vld = `FALSE;
 	endcase
 end

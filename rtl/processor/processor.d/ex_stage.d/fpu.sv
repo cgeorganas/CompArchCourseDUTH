@@ -61,10 +61,19 @@ fpu_mult fpu_mult_0(
 	.fpu_mult_busy	(fpu_mult_busy)
 );
 
+logic [34:0] fpu_add;
+fpu_add fpu_add_0(
+	.opa			(opa),
+	.opb			(opb),
+	.out			(fpu_add)
+);
+
 logic [34:0] fpu_res_raw;
 always_comb begin
 	case (ID_EX_alu_func)
 		`ALU_FMULS:	fpu_res_raw = fpu_mult;
+		`ALU_FADDS:	fpu_res_raw = fpu_add;
+		`ALU_FSUBS:	fpu_res_raw = fpu_add;
 		default:	fpu_res_raw = fpu_int2flt;
 	endcase
 end

@@ -64,20 +64,20 @@
 `define FADDS_INST				{3'b???, 5'b?????, 7'b0000000}
 `define FSUBS_INST				{3'b???, 5'b?????, 7'b0000100}
 `define FMULS_INST				{3'b???, 5'b?????, 7'b0001000}
-`define FDIVS_INST				{3'b???, 5'b?????, 7'b0001100}
-`define FSQRTS_INST				{3'b???, 5'b00000, 7'b0101100}
-`define FSGNJS_INST				{3'b000, 5'b?????, 7'b0010000}
-`define FSGNJNS_INST			{3'b001, 5'b?????, 7'b0010000}
-`define FSGNJXS_INST			{3'b010, 5'b?????, 7'b0010000}
-`define FMINS_INST				{3'b000, 5'b?????, 7'b0010100}
-`define FMAXS_INST				{3'b001, 5'b?????, 7'b0010100}
+// `define FDIVS_INST				{3'b???, 5'b?????, 7'b0001100}
+// `define FSQRTS_INST				{3'b???, 5'b00000, 7'b0101100}
+// `define FSGNJS_INST				{3'b000, 5'b?????, 7'b0010000}
+// `define FSGNJNS_INST			{3'b001, 5'b?????, 7'b0010000}
+// `define FSGNJXS_INST			{3'b010, 5'b?????, 7'b0010000}
+// `define FMINS_INST				{3'b000, 5'b?????, 7'b0010100}
+// `define FMAXS_INST				{3'b001, 5'b?????, 7'b0010100}
 `define FCVTWS_INST				{3'b???, 5'b00000, 7'b1100000}
 `define FCVTWUS_INST			{3'b???, 5'b00001, 7'b1100000}
 `define FMVXW_INST				{3'b000, 5'b00000, 7'b1110000}
-`define FEQS_INST				{3'b010, 5'b?????, 7'b1010000}
-`define FLTS_INST				{3'b001, 5'b?????, 7'b1010000}
-`define FLES_INST				{3'b000, 5'b?????, 7'b1010000}
-`define FCLASSS_INST			{3'b001, 5'b00000, 7'b1110000}
+// `define FEQS_INST				{3'b010, 5'b?????, 7'b1010000}
+// `define FLTS_INST				{3'b001, 5'b?????, 7'b1010000}
+// `define FLES_INST				{3'b000, 5'b?????, 7'b1010000}
+// `define FCLASSS_INST			{3'b001, 5'b00000, 7'b1110000}
 `define FCVTSW_INST				{3'b???, 5'b00000, 7'b1101000}
 `define FCVTSWU_INST			{3'b???, 5'b00001, 7'b1101000}
 `define FMVWX_INST				{3'b000, 5'b00000, 7'b1111000}
@@ -153,6 +153,8 @@
 `define ALU_FCVTWS				5'h14
 `define ALU_FCVTWUS				5'h15
 `define ALU_FMULS				5'h16
+`define ALU_FADDS				5'h17
+`define ALU_FSUBS				5'h18
 
 // Memory bus commands control signals
 `define MEM_LB					4'b0_000
