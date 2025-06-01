@@ -103,6 +103,27 @@ li			a3, 0x7fc00001
 li			a4, 0x7fc00001
 jal			ra, fp_mult
 
+# Subnormal * normal 1
+li			a1, 0x00057ae0
+li			a2, 0x3f000000
+li			a3, 0x0002bd70
+li			a4, 0x0002bd70
+jal			ra, fp_mult
+
+# Subnormal * normal 2
+li			a1, 0x00057ae0
+li			a2, 0x3e800000
+li			a3, 0x00015eb8
+li			a4, 0x00015eb8
+jal			ra, fp_mult
+
+# Subnormal * normal 3
+li			a1, 0x00057ae0
+li			a2, 0x3e000000
+li			a3, 0x0000af5c
+li			a4, 0x0000af5c
+jal			ra, fp_mult
+
 jal			x0, end
 
 fp_mult:

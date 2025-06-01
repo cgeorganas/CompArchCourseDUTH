@@ -13,6 +13,13 @@ module fpu_mult(
 	output	logic			fpu_mult_busy
 );
 
+// SUBNORMAL FLAG
+logic			subn_fl_a, subn_fl_b, subn_fl;
+assign			subn_fl_a	= (~(|opa[30:23]))&&(|opa[22:0]);
+assign			subn_fl_b	= (~(|opb[30:23]))&&(|opb[22:0]);
+assign			subn_fl		= subn_fl_a||subn_fl_b;
+
+
 // ZERO FLAG
 logic			z_fl_a, z_fl_b, z_fl;
 assign			z_fl_a		= ~(|opa[30:0]);
@@ -44,6 +51,20 @@ logic			sign;
 assign			sign = opa[31]^opb[31];
 
 
+// OUTPUT EXPONENT
+// 9 bit sum, the bias becomes 254
+// Anything below 128 is subnormal, anything above 381 causes an overflow
+logic [8:0]		exp_sum;
+assign			exp_sum = {1'b0, opa[30:23]} + {1'b0, opb[30:23]} + {8'h0, subn_fl_a} + {8'h0, subn_fl_b};
+
+logic [8:0]		exp;
+assign			exp = exp_sum - 127;
+
+logic			ovf_fl, unf_fl;
+assign			ovf_fl = (exp_sum>381);
+assign			unf_fl = (exp_sum<128);
+
+
 // OUTPUT MANTISSA
 // Normalise multiplication result
 logic [47:0]	mult_result_norm;
@@ -67,20 +88,11 @@ end
 logic [25:0]	mant;
 assign			mant = {mult_result_norm[46:22], |mult_result_norm[21:0]};
 
+logic [47:0]	subn_mult_res;
+assign			subn_mult_res = mult_result_norm >> (132-exp_sum);
 
-// OUTPUT EXPONENT
-logic [7:0]		exp_a, exp_b;
-assign			exp_a = opa[30:23];
-assign			exp_b = opb[30:23];
-
-// 9 bit sum, 9th bit used to detect overflows/underflows
-// Add exponents, adjust bias, add 1 if the multiplication result was >=2
-logic [8:0]		exp;
-assign			exp = exp_a + exp_b - 127 + mult_result[47];
-
-logic			ovf_fl, unf_fl;
-assign			ovf_fl = exp[8];
-assign			unf_fl = `FALSE; // Work in progress
+logic [25:0]	subn_mant;
+assign			subn_mant = {subn_mult_res[47:23], |subn_mult_res[22:0]};
 
 
 // OUTPUT CALCULATION
@@ -88,7 +100,7 @@ logic [34:0] normal_out, ovf_out, unf_out;
 
 assign			normal_out	= {sign, exp[7:0], mant};
 assign			ovf_out		= {sign, 8'hff, 26'h0};
-assign			unf_out		= {sign, 8'h00, 26'h0};
+assign			unf_out		= {sign, 8'h00, subn_mant};
 
 always_comb begin	
 	case ({nan_fl, inf_fl, z_fl})
