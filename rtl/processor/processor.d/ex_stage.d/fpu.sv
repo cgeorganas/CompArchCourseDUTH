@@ -65,9 +65,9 @@ logic [34:0] fpu_add;
 fpu_add fpu_add_0(
 	.clk			(clk),
 	.rst			(rst),
-	.opa			(opa),
-	.opb			(opb),
-	.is_addition	(ID_EX_alu_func==`ALU_FADDS),
+	.opa_in			(opa),
+	.opb_in			(opb),
+	.flip			(ID_EX_alu_func==`ALU_FSUBS),
 	.new_input		(new_input),
 	.out			(fpu_add),
 	.fpu_add_busy	(fpu_add_busy)

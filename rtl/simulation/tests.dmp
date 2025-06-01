@@ -4,9 +4,100 @@ tests.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <.text>:
-   0:	400005b7          	lui	a1,0x40000
-   4:	40800637          	lui	a2,0x40800
-   8:	f00580d3          	fmv.w.x	ft1,a1
-   c:	f0060153          	fmv.w.x	ft2,a2
-  10:	0020f1d3          	fadd.s	ft3,ft1,ft2
+00000000 <fadd_func-0x54>:
+   0:	412005b7          	lui	a1,0x41200
+   4:	40000637          	lui	a2,0x40000
+   8:	414006b7          	lui	a3,0x41400
+   c:	41400737          	lui	a4,0x41400
+  10:	044000ef          	jal	54 <fadd_func>
+  14:	412005b7          	lui	a1,0x41200
+  18:	c0000637          	lui	a2,0xc0000
+  1c:	410006b7          	lui	a3,0x41000
+  20:	41000737          	lui	a4,0x41000
+  24:	030000ef          	jal	54 <fadd_func>
+  28:	c12005b7          	lui	a1,0xc1200
+  2c:	40000637          	lui	a2,0x40000
+  30:	c10006b7          	lui	a3,0xc1000
+  34:	c1000737          	lui	a4,0xc1000
+  38:	01c000ef          	jal	54 <fadd_func>
+  3c:	c12005b7          	lui	a1,0xc1200
+  40:	c0000637          	lui	a2,0xc0000
+  44:	c14006b7          	lui	a3,0xc1400
+  48:	c1400737          	lui	a4,0xc1400
+  4c:	008000ef          	jal	54 <fadd_func>
+  50:	0400006f          	j	90 <fadd_end>
+
+00000054 <fadd_func>:
+  54:	f00580d3          	fmv.w.x	ft1,a1
+  58:	f0060153          	fmv.w.x	ft2,a2
+  5c:	0020a1d3          	fadd.s	ft3,ft1,ft2,rdn
+  60:	e00187d3          	fmv.x.w	a5,ft3
+  64:	00f6c533          	xor	a0,a3,a5
+  68:	001121d3          	fadd.s	ft3,ft2,ft1,rdn
+  6c:	e00187d3          	fmv.x.w	a5,ft3
+  70:	00f6c533          	xor	a0,a3,a5
+  74:	0020b1d3          	fadd.s	ft3,ft1,ft2,rup
+  78:	e00187d3          	fmv.x.w	a5,ft3
+  7c:	00f74533          	xor	a0,a4,a5
+  80:	001131d3          	fadd.s	ft3,ft2,ft1,rup
+  84:	e00187d3          	fmv.x.w	a5,ft3
+  88:	00f74533          	xor	a0,a4,a5
+  8c:	00008067          	ret
+
+00000090 <fadd_end>:
+  90:	00000013          	nop
+  94:	412005b7          	lui	a1,0x41200
+  98:	40000637          	lui	a2,0x40000
+  9c:	410006b7          	lui	a3,0x41000
+  a0:	41000737          	lui	a4,0x41000
+  a4:	094000ef          	jal	138 <fsub_func>
+  a8:	412005b7          	lui	a1,0x41200
+  ac:	c0000637          	lui	a2,0xc0000
+  b0:	414006b7          	lui	a3,0x41400
+  b4:	41400737          	lui	a4,0x41400
+  b8:	080000ef          	jal	138 <fsub_func>
+  bc:	c12005b7          	lui	a1,0xc1200
+  c0:	40000637          	lui	a2,0x40000
+  c4:	c14006b7          	lui	a3,0xc1400
+  c8:	c1400737          	lui	a4,0xc1400
+  cc:	06c000ef          	jal	138 <fsub_func>
+  d0:	c12005b7          	lui	a1,0xc1200
+  d4:	c0000637          	lui	a2,0xc0000
+  d8:	c10006b7          	lui	a3,0xc1000
+  dc:	c1000737          	lui	a4,0xc1000
+  e0:	058000ef          	jal	138 <fsub_func>
+  e4:	400005b7          	lui	a1,0x40000
+  e8:	41200637          	lui	a2,0x41200
+  ec:	c10006b7          	lui	a3,0xc1000
+  f0:	c1000737          	lui	a4,0xc1000
+  f4:	044000ef          	jal	138 <fsub_func>
+  f8:	400005b7          	lui	a1,0x40000
+  fc:	c1200637          	lui	a2,0xc1200
+ 100:	414006b7          	lui	a3,0x41400
+ 104:	41400737          	lui	a4,0x41400
+ 108:	030000ef          	jal	138 <fsub_func>
+ 10c:	c00005b7          	lui	a1,0xc0000
+ 110:	41200637          	lui	a2,0x41200
+ 114:	c14006b7          	lui	a3,0xc1400
+ 118:	c1400737          	lui	a4,0xc1400
+ 11c:	01c000ef          	jal	138 <fsub_func>
+ 120:	c00005b7          	lui	a1,0xc0000
+ 124:	c1200637          	lui	a2,0xc1200
+ 128:	410006b7          	lui	a3,0x41000
+ 12c:	41000737          	lui	a4,0x41000
+ 130:	008000ef          	jal	138 <fsub_func>
+ 134:	0280006f          	j	15c <fsub_end>
+
+00000138 <fsub_func>:
+ 138:	f00580d3          	fmv.w.x	ft1,a1
+ 13c:	f0060153          	fmv.w.x	ft2,a2
+ 140:	0820a1d3          	fsub.s	ft3,ft1,ft2,rdn
+ 144:	e00187d3          	fmv.x.w	a5,ft3
+ 148:	00f6c533          	xor	a0,a3,a5
+ 14c:	0820b1d3          	fsub.s	ft3,ft1,ft2,rup
+ 150:	e00187d3          	fmv.x.w	a5,ft3
+ 154:	00f74533          	xor	a0,a4,a5
+ 158:	00008067          	ret
+
+0000015c <fsub_end>:
+ 15c:	00000013          	nop
