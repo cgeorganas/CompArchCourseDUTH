@@ -1,108 +1,3 @@
-# Normal
-li			a1, 0x5499160e
-li			a2, 0x570783c4
-li			a3, 0x6c2212d9
-li			a4, 0x6c2212da
-jal			ra, fp_mult
-
-# Pos * pos zero
-li			a1, 0x5499160e
-li			a2, 0x00000000
-li			a3, 0x00000000
-li			a4, 0x00000000
-jal			ra, fp_mult
-
-# Pos * neg zero
-li			a1, 0x5499160e
-li			a2, 0x80000000
-li			a3, 0x80000000
-li			a4, 0x80000000
-jal			ra, fp_mult
-
-# Neg * pos zero
-li			a1, 0xd499160e
-li			a2, 0x00000000
-li			a3, 0x80000000
-li			a4, 0x80000000
-jal			ra, fp_mult
-
-# Neg * neg zero
-li			a1, 0xd499160e
-li			a2, 0x80000000
-li			a3, 0x00000000
-li			a4, 0x00000000
-jal			ra, fp_mult
-
-# Pos * pos inf
-li			a1, 0x5499160e
-li			a2, 0x7f800000
-li			a3, 0x7f800000
-li			a4, 0x7f800000
-jal			ra, fp_mult
-
-# Pos * neg inf
-li			a1, 0x5499160e
-li			a2, 0xff800000
-li			a3, 0xff800000
-li			a4, 0xff800000
-jal			ra, fp_mult
-
-# Neg * pos inf
-li			a1, 0xd499160e
-li			a2, 0x7f800000
-li			a3, 0xff800000
-li			a4, 0xff800000
-jal			ra, fp_mult
-
-# Neg * neg inf
-li			a1, 0xd499160e
-li			a2, 0xff800000
-li			a3, 0x7f800000
-li			a4, 0x7f800000
-jal			ra, fp_mult
-
-# Pos overflow
-li			a1, 0x7e5693a4
-li			a2, 0x7e5693a4
-li			a3, 0x7f800000
-li			a4, 0x7f800000
-jal			ra, fp_mult
-
-# Neg overflow
-li			a1, 0xfe5693a4
-li			a2, 0x7e5693a4
-li			a3, 0xff800000
-li			a4, 0xff800000
-jal			ra, fp_mult
-
-# Pos zero * pos inf
-li			a1, 0x00000000
-li			a2, 0x7f800000
-li			a3, 0x7fc00001
-li			a4, 0x7fc00001
-jal			ra, fp_mult
-
-# Pos zero * neg inf
-li			a1, 0x00000000
-li			a2, 0xff800000
-li			a3, 0x7fc00001
-li			a4, 0x7fc00001
-jal			ra, fp_mult
-
-# Neg zero * pos inf
-li			a1, 0x80000000
-li			a2, 0x7f800000
-li			a3, 0x7fc00001
-li			a4, 0x7fc00001
-jal			ra, fp_mult
-
-# Neg zero * neg inf
-li			a1, 0x80000000
-li			a2, 0xff800000
-li			a3, 0x7fc00001
-li			a4, 0x7fc00001
-jal			ra, fp_mult
-
 # Subnormal * normal 1
 li			a1, 0x00057ae0
 li			a2, 0x3f000000
@@ -122,6 +17,27 @@ li			a1, 0x00057ae0
 li			a2, 0x3e000000
 li			a3, 0x0000af5c
 li			a4, 0x0000af5c
+jal			ra, fp_mult
+
+# Subnormal * normal 4
+li			a1, 0x007fffff
+li			a2, 0x3f800000
+li			a3, 0x007fffff
+li			a4, 0x007fffff
+jal			ra, fp_mult
+
+# Subnormal * normal 5
+li			a1, 0x007fffff
+li			a2, 0x3f800001
+li			a3, 0x007fffff
+li			a4, 0x00800000
+jal			ra, fp_mult
+
+# Subnormal * normal 6
+li			a1, 0x007fffff
+li			a2, 0x3f800001
+li			a3, 0x007fffff
+li			a4, 0x00800000
 jal			ra, fp_mult
 
 jal			x0, end

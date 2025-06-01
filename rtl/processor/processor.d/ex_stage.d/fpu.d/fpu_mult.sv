@@ -62,37 +62,25 @@ assign			exp = exp_sum - 127;
 
 logic			ovf_fl, unf_fl;
 assign			ovf_fl = (exp_sum>381);
-assign			unf_fl = (exp_sum<128);
+assign			unf_fl = (exp_sum<129)&&(~mult_result[46]);
 
 
 // OUTPUT MANTISSA
 // Normalise multiplication result
 logic [47:0]	mult_result_norm;
-assign			fpu_mult_busy = (~mult_result_norm[47])&&(~sc_fl);
+assign			fpu_mult_busy = `FALSE;
 
-always_ff @(posedge clk) begin
-	if (rst) begin
-		mult_result_norm <= 48'h0;
-	end
-	else begin
-		if (new_input) begin
-			mult_result_norm <= mult_result;
-		end
-		else if (fpu_mult_busy) begin
-			mult_result_norm <= mult_result_norm << 1;
-		end
-	end
-end
+assign			mult_result_norm = mult_result << (~mult_result[47]);
 
 // Throw away the implied leading 1
 logic [25:0]	mant;
 assign			mant = {mult_result_norm[46:22], |mult_result_norm[21:0]};
 
 logic [47:0]	subn_mult_res;
-assign			subn_mult_res = mult_result_norm >> (132-exp_sum);
+assign			subn_mult_res = mult_result >> (128-exp_sum);
 
 logic [25:0]	subn_mant;
-assign			subn_mant = {subn_mult_res[47:23], |subn_mult_res[22:0]};
+assign			subn_mant = {subn_mult_res[45:21], |subn_mult_res[20:0]};
 
 
 // OUTPUT CALCULATION
