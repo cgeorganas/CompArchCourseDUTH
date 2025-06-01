@@ -4,73 +4,31 @@ tests.o:     file format elf32-littleriscv
 
 Disassembly of section .text:
 
-00000000 <fp_mult-0xc4>:
-   0:	000585b7          	lui	a1,0x58
-   4:	ae058593          	addi	a1,a1,-1312 # 57ae0 <end+0x579e0>
-   8:	3f000637          	lui	a2,0x3f000
-   c:	0002c6b7          	lui	a3,0x2c
-  10:	d7068693          	addi	a3,a3,-656 # 2bd70 <end+0x2bc70>
-  14:	0002c737          	lui	a4,0x2c
-  18:	d7070713          	addi	a4,a4,-656 # 2bd70 <end+0x2bc70>
-  1c:	0a8000ef          	jal	c4 <fp_mult>
-  20:	000585b7          	lui	a1,0x58
-  24:	ae058593          	addi	a1,a1,-1312 # 57ae0 <end+0x579e0>
-  28:	3e800637          	lui	a2,0x3e800
-  2c:	000166b7          	lui	a3,0x16
-  30:	eb868693          	addi	a3,a3,-328 # 15eb8 <end+0x15db8>
-  34:	00016737          	lui	a4,0x16
-  38:	eb870713          	addi	a4,a4,-328 # 15eb8 <end+0x15db8>
-  3c:	088000ef          	jal	c4 <fp_mult>
-  40:	000585b7          	lui	a1,0x58
-  44:	ae058593          	addi	a1,a1,-1312 # 57ae0 <end+0x579e0>
-  48:	3e000637          	lui	a2,0x3e000
-  4c:	0000b6b7          	lui	a3,0xb
-  50:	f5c68693          	addi	a3,a3,-164 # af5c <end+0xae5c>
-  54:	0000b737          	lui	a4,0xb
-  58:	f5c70713          	addi	a4,a4,-164 # af5c <end+0xae5c>
-  5c:	068000ef          	jal	c4 <fp_mult>
-  60:	008005b7          	lui	a1,0x800
-  64:	fff58593          	addi	a1,a1,-1 # 7fffff <end+0x7ffeff>
-  68:	3f800637          	lui	a2,0x3f800
-  6c:	008006b7          	lui	a3,0x800
-  70:	fff68693          	addi	a3,a3,-1 # 7fffff <end+0x7ffeff>
-  74:	00800737          	lui	a4,0x800
-  78:	fff70713          	addi	a4,a4,-1 # 7fffff <end+0x7ffeff>
-  7c:	048000ef          	jal	c4 <fp_mult>
-  80:	008005b7          	lui	a1,0x800
-  84:	fff58593          	addi	a1,a1,-1 # 7fffff <end+0x7ffeff>
-  88:	3f800637          	lui	a2,0x3f800
-  8c:	00160613          	addi	a2,a2,1 # 3f800001 <end+0x3f7fff01>
-  90:	008006b7          	lui	a3,0x800
-  94:	fff68693          	addi	a3,a3,-1 # 7fffff <end+0x7ffeff>
-  98:	00800737          	lui	a4,0x800
-  9c:	028000ef          	jal	c4 <fp_mult>
-  a0:	008005b7          	lui	a1,0x800
-  a4:	fff58593          	addi	a1,a1,-1 # 7fffff <end+0x7ffeff>
-  a8:	3f800637          	lui	a2,0x3f800
-  ac:	00160613          	addi	a2,a2,1 # 3f800001 <end+0x3f7fff01>
-  b0:	008006b7          	lui	a3,0x800
-  b4:	fff68693          	addi	a3,a3,-1 # 7fffff <end+0x7ffeff>
-  b8:	00800737          	lui	a4,0x800
-  bc:	008000ef          	jal	c4 <fp_mult>
-  c0:	0400006f          	j	100 <end>
+00000000 <fp_mult-0x1c>:
+   0:	000015b7          	lui	a1,0x1
+   4:	80058593          	addi	a1,a1,-2048 # 800 <end+0x7a8>
+   8:	40000637          	lui	a2,0x40000
+   c:	000016b7          	lui	a3,0x1
+  10:	00001737          	lui	a4,0x1
+  14:	008000ef          	jal	1c <fp_mult>
+  18:	0400006f          	j	58 <end>
 
-000000c4 <fp_mult>:
-  c4:	f00580d3          	fmv.w.x	ft1,a1
-  c8:	f0060153          	fmv.w.x	ft2,a2
-  cc:	1020a1d3          	fmul.s	ft3,ft1,ft2,rdn
-  d0:	e00187d3          	fmv.x.w	a5,ft3
-  d4:	00f6c533          	xor	a0,a3,a5
-  d8:	101121d3          	fmul.s	ft3,ft2,ft1,rdn
-  dc:	e00187d3          	fmv.x.w	a5,ft3
-  e0:	00f6c533          	xor	a0,a3,a5
-  e4:	1020b1d3          	fmul.s	ft3,ft1,ft2,rup
-  e8:	e00187d3          	fmv.x.w	a5,ft3
-  ec:	00f74533          	xor	a0,a4,a5
-  f0:	101131d3          	fmul.s	ft3,ft2,ft1,rup
-  f4:	e00187d3          	fmv.x.w	a5,ft3
-  f8:	00f74533          	xor	a0,a4,a5
-  fc:	00008067          	ret
+0000001c <fp_mult>:
+  1c:	f00580d3          	fmv.w.x	ft1,a1
+  20:	f0060153          	fmv.w.x	ft2,a2
+  24:	1020a1d3          	fmul.s	ft3,ft1,ft2,rdn
+  28:	e00187d3          	fmv.x.w	a5,ft3
+  2c:	00f6c533          	xor	a0,a3,a5
+  30:	101121d3          	fmul.s	ft3,ft2,ft1,rdn
+  34:	e00187d3          	fmv.x.w	a5,ft3
+  38:	00f6c533          	xor	a0,a3,a5
+  3c:	1020b1d3          	fmul.s	ft3,ft1,ft2,rup
+  40:	e00187d3          	fmv.x.w	a5,ft3
+  44:	00f74533          	xor	a0,a4,a5
+  48:	101131d3          	fmul.s	ft3,ft2,ft1,rup
+  4c:	e00187d3          	fmv.x.w	a5,ft3
+  50:	00f74533          	xor	a0,a4,a5
+  54:	00008067          	ret
 
-00000100 <end>:
- 100:	00000013          	nop
+00000058 <end>:
+  58:	00000013          	nop

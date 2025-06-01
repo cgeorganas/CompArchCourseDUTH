@@ -58,7 +58,6 @@ logic [8:0]		exp_sum;
 assign			exp_sum = {1'b0, opa[30:23]} + {1'b0, opb[30:23]} + {8'h0, subn_fl_a} + {8'h0, subn_fl_b};
 
 logic [8:0]		exp;
-assign			exp = exp_sum - 127;
 
 logic			ovf_fl, unf_fl;
 assign			ovf_fl = (exp_sum>381);
@@ -68,9 +67,24 @@ assign			unf_fl = (exp_sum<129)&&(~mult_result[46]);
 // OUTPUT MANTISSA
 // Normalise multiplication result
 logic [47:0]	mult_result_norm;
-assign			fpu_mult_busy = `FALSE;
+assign			fpu_mult_busy = (~mult_result_norm[47])&&(~sc_fl);
 
-assign			mult_result_norm = mult_result << (~mult_result[47]);
+always_ff @(posedge clk) begin
+	if (rst) begin
+		mult_result_norm	<= 48'h0;
+		exp					<= 9'h0;
+	end
+	else begin
+		if (new_input) begin
+			mult_result_norm	<= mult_result;
+			exp					<= exp_sum - 126;
+		end
+		else if (fpu_mult_busy) begin
+			mult_result_norm	<= mult_result_norm << 1;
+			exp					<= exp - 1;
+		end
+	end
+end
 
 // Throw away the implied leading 1
 logic [25:0]	mant;
