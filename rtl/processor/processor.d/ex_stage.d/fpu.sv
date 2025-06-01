@@ -63,9 +63,14 @@ fpu_mult fpu_mult_0(
 
 logic [34:0] fpu_add;
 fpu_add fpu_add_0(
+	.clk			(clk),
+	.rst			(rst),
 	.opa			(opa),
 	.opb			(opb),
-	.out			(fpu_add)
+	.is_addition	(ID_EX_alu_func==`ALU_FADDS),
+	.new_input		(new_input),
+	.out			(fpu_add),
+	.fpu_add_busy	(fpu_add_busy)
 );
 
 logic [34:0] fpu_res_raw;
@@ -91,6 +96,6 @@ always_comb begin
 	endcase
 end
 
-assign fpu_busy = fpu_mult_busy&&(ID_EX_alu_func==`ALU_FMULS);
+assign fpu_busy = (fpu_mult_busy&&(ID_EX_alu_func==`ALU_FMULS))||(fpu_add_busy&&((ID_EX_alu_func==`ALU_FADDS)||(ID_EX_alu_func==`ALU_FSUBS)));
 
 endmodule
