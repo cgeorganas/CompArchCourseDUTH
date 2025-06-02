@@ -10,28 +10,10 @@ module fpu(
 	input	logic	[47:0]	mult_result,
 	input	logic	[4:0]	ID_EX_alu_func,
 	input	logic	[2:0]	rm,
+	input	logic			new_input,
 	output	logic	[31:0]	fpu_res,
 	output	logic			fpu_busy
 );
-
-logic [31:0] prev_opa, prev_opb;
-logic [4:0] prev_func;
-
-always_ff @(posedge clk) begin
-	if (rst) begin
-		prev_opa <= 32'h0;
-		prev_opb <= 32'h0;
-		prev_func <= `ALU_ADD;
-	end
-	else begin
-		prev_opa <= opa;
-		prev_opb <= opb;
-		prev_func <= ID_EX_alu_func;
-	end
-end
-
-logic new_input;
-assign new_input = (prev_opa!=opa)||(prev_opb!=opb)||(prev_func!=ID_EX_alu_func);
 
 logic [34:0] fpu_int2flt;
 fpu_int2flt fpu_int2flt_0(
@@ -62,6 +44,7 @@ fpu_mult fpu_mult_0(
 );
 
 logic [34:0] fpu_add;
+logic fpu_add_busy;
 fpu_add fpu_add_0(
 	.clk			(clk),
 	.rst			(rst),

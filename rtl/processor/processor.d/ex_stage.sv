@@ -25,7 +25,7 @@ module ex_stage(
 	output	logic			EX_alu_busy
 );
 
-//Forwarded data
+// Forwarded data
 logic [31:0] rs1_data, rs2_data;
 always_comb begin
 	case(ID_EX_mux_sel[5:3])
@@ -40,7 +40,7 @@ always_comb begin
 	endcase
 end
 
-//Operand selection
+// Operand selection
 logic [31:0] opa, opb;
 always_comb begin
 	case(ID_EX_mux_sel[9:8])
@@ -57,7 +57,27 @@ end
 
 assign EX_mem_din = rs2_data;
 
-//Multiplier
+// New input detection
+logic [4:0] prev_func;
+logic [31:0] prev_opa, prev_opb;
+
+always_ff @(posedge clk) begin
+	if (rst) begin
+		prev_opa <= 32'h0;
+		prev_opb <= 32'h0;
+		prev_func <= `ALU_ADD;
+	end
+	else begin
+		prev_opa <= opa;
+		prev_opb <= opb;
+		prev_func <= ID_EX_alu_func;
+	end
+end
+
+logic new_input;
+assign new_input = (prev_opa!=opa)||(prev_opb!=opb)||(prev_func!=ID_EX_alu_func);
+
+// Multiplier
 logic signed [65:0] mult_result;
 multipler multipler_0(
 	.opa			(opa),
@@ -66,7 +86,7 @@ multipler multipler_0(
 	.mult_result	(mult_result)
 );
 
-//Divider
+// Divider
 logic divider_busy;
 logic [31:0] quotient, remainder;
 divider divider_0(
@@ -80,7 +100,7 @@ divider divider_0(
 	.divider_busy	(divider_busy)
 );
 
-//FPU
+// FPU
 logic [31:0] fpu_res;
 logic fpu_busy;
 fpu fpu_0(
@@ -91,13 +111,14 @@ fpu fpu_0(
 	.mult_result	(mult_result[47:0]),
 	.ID_EX_alu_func	(ID_EX_alu_func),
 	.rm				(ID_EX_imm[2:0]),
+	.new_input		(new_input),
 	.fpu_res		(fpu_res),
 	.fpu_busy		(fpu_busy)
 );
 
 assign EX_alu_busy = divider_busy||fpu_busy;
 
-//ALU block
+// ALU block
 always_comb begin
 	EX_alu_res = 32'hbaadbeef;
 	EX_vld = ID_EX_vld;
