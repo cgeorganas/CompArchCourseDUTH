@@ -7,26 +7,29 @@ module fpu_add(
 	input	logic			rst,
 	input	logic	[31:0]	opa_in,
 	input	logic	[31:0]	opb_in,
-	input	logic			flip,
+	input	logic			fsub,
 	input	logic			new_input,
 	output	logic	[34:0]	out,
 	output	logic			fpu_add_busy
 );
 
 // OPERAND FILTERING
+logic			swap;
+assign			swap = (opa_in[30:0]<opb_in[30:0]);
+
 logic	[31:0]	opa, opb;
 always_comb begin
-	if (opa_in[30:0]>opb_in[30:0]) begin
-		opa = opa_in;
-		opb = {opb_in[31]^flip, opb_in[30:0]};
+	if (swap) begin
+		opa = opb_in;
+		opb = opa_in;
 	end
 	else begin
-		opa = opb_in;
-		opb = {opa_in[31]^flip, opa_in[30:0]};
+		opa = opa_in;
+		opb = opb_in;
 	end
 end
 logic	func; // 0 for addition, 1 for subtraction
-assign	func = opa[31]^opb[31];
+assign	func = opa[31]^opb[31]^fsub;
 
 
 
@@ -58,15 +61,15 @@ assign			nan_fl = nan_fl_a||nan_fl_b;
 
 // OUTPUT CALCULATION
 logic			sign;
-assign			sign = (flip&&(opa==opb_in)) ? ~opa[31] : opa[31];
+assign			sign = opa[31]^(swap&&fsub);
 
 logic [7:0]		exp_diff, exp_init, exp;
 assign			exp_diff = opa[30:23] - opb[30:23];
 assign			exp_init = opa[30:23];
 
 logic	[48:0]	mant_opa, mant_opb, mant_opb_init, mant, mant_init;
-assign			mant_opa		= {2'b01, opa[22:0], 24'h0};
-assign			mant_opb_init	= {2'b01, opb[22:0], 24'h0};
+assign			mant_opa		= {1'b0, |opa[30:23], opa[22:0], 24'h0};
+assign			mant_opb_init	= {1'b0, |opb[30:23], opb[22:0], 24'h0};
 assign			mant_opb		= mant_opb_init >> (exp_diff);
 assign			mant_init		= func ? (mant_opa - mant_opb) : (mant_opa + mant_opb);
 
@@ -82,7 +85,7 @@ assign			sc_fl = z_fl||one_inf_fl||two_inf_fl||nan_fl||skip_fl;
 
 
 // NORMALISE RESULT
-assign	fpu_add_busy = (new_input)||((~mant[48])&&(~skip_fl));
+assign	fpu_add_busy = (new_input)||((~mant[48])&&(~sc_fl));
 always_ff @(posedge clk) begin
 	if (rst) begin
 		mant	<= 49'h0;
@@ -104,22 +107,27 @@ end
 
 // OUTPUT SELECTION
 logic [34:0] normal_out;
+logic [33:0] opa_adj;
 
 always_comb begin
 
 	if (skip_fl) begin
-		if (func)	normal_out = {opa[31], (opa[30:0] - 1), 3'b111};
-		else		normal_out = {opa, 3'b001};
+		if (func)	opa_adj = {opa[30:0], 3'b000} - 1;
+		else		opa_adj = {opa[30:0], 3'b001};
+		normal_out = {sign, opa_adj};
 	end
 	else begin
 		normal_out = {sign, exp, mant[47:23], |mant[22:0]};
 	end
 
-	if (z_fl||one_inf_fl||nan_fl) begin
+	if (z_fl||one_inf_fl) begin
+		out = {sign, opa[30:0], 3'b000};
+	end
+	else if (nan_fl) begin
 		out = {opa, 3'b000};
 	end
 	else if (two_inf_fl) begin
-		out = opa[31]^opb[31] ? {1'b0, 9'h1ff, 22'h1, 3'h0} : {opa, 3'b000};
+		out = (opa[31]^opb[31]^fsub) ? {1'b0, 9'h1ff, 22'h1, 3'h0} : {sign, opa[30:0], 3'b000};
 	end
 	else begin
 		out = normal_out;

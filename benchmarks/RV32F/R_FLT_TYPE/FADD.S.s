@@ -26,6 +26,69 @@ li			a3, 0xc1400000
 li			a4, 0xc1400000
 jal			ra, fadd_func
 
+# (Rand) + (+0) = (Rand)
+li			a1, 0x516b7038
+li			a2, 0x00000000
+li			a3, 0x516b7038
+li			a4, 0x516b7038
+jal			ra, fadd_func
+
+# (Rand) + (-0) = (Rand)
+li			a1, 0x516b7038
+li			a2, 0x80000000
+li			a3, 0x516b7038
+li			a4, 0x516b7038
+jal			ra, fadd_func
+
+# (+Inf) + (Rand) = (+Inf)
+li			a1, 0x7f800000
+li			a2, 0x4f9502f9
+li			a3, 0x7f800000
+li			a4, 0x7f800000
+jal			ra, fadd_func
+
+# (-Inf) + (Rand) = (-Inf)
+li			a1, 0xff800000
+li			a2, 0x4f9502f9
+li			a3, 0xff800000
+li			a4, 0xff800000
+jal			ra, fadd_func
+
+# (+Inf) + (+Inf) = (+Inf)
+li			a1, 0x7f800000
+li			a2, 0x7f800000
+li			a3, 0x7f800000
+li			a4, 0x7f800000
+jal			ra, fadd_func
+
+# (-Inf) + (-Inf) = (-Inf)
+li			a1, 0xff800000
+li			a2, 0xff800000
+li			a3, 0xff800000
+li			a4, 0xff800000
+jal			ra, fadd_func
+
+# (+Inf) + (-Inf) = qNaN
+li			a1, 0x7f800000
+li			a2, 0xff800000
+li			a3, 0x7fc00001
+li			a4, 0x7fc00001
+jal			ra, fadd_func
+
+# NaN + (Rand) = NaN
+li			a1, 0x7f922e2e
+li			a2, 0x47392800
+li			a3, 0x7f922e2e
+li			a4, 0x7f922e2e
+jal			ra, fadd_func
+
+# (Large) + (Small) ~= (Large)
+li			a1, 0x53800000
+li			a2, 0x3f800000
+li			a3, 0x53800000
+li			a4, 0x53800001
+jal			ra, fadd_func
+
 jal			x0, fadd_end
 
 fadd_func:

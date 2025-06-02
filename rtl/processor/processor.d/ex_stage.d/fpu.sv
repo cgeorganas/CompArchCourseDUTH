@@ -67,7 +67,7 @@ fpu_add fpu_add_0(
 	.rst			(rst),
 	.opa_in			(opa),
 	.opb_in			(opb),
-	.flip			(ID_EX_alu_func==`ALU_FSUBS),
+	.fsub			(ID_EX_alu_func==`ALU_FSUBS),
 	.new_input		(new_input),
 	.out			(fpu_add),
 	.fpu_add_busy	(fpu_add_busy)
