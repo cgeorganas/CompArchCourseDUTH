@@ -89,6 +89,83 @@ li			a3, 0x53800000
 li			a4, 0x53800001
 jal			ra, fadd_func
 
+# Overflow 1
+li			a1, 0x7f7fff80
+li			a2, 0x7f7fff80
+li			a3, 0x7f800000
+li			a4, 0x7f800000
+jal			ra, fadd_func
+
+# Overflow 2
+li			a1, 0xff7fff80
+li			a2, 0xff7fff80
+li			a3, 0xff800000
+li			a4, 0xff800000
+jal			ra, fadd_func
+
+# Subnormal + Subnormal = Normal
+li			a1, 0x007fffff
+li			a2, 0x00000001
+li			a3, 0x00800000
+li			a4, 0x00800000
+jal			ra, fadd_func
+
+# Normal + Subnormal = Subnormal 1
+li			a1, 0x00800000
+li			a2, 0x80000001
+li			a3, 0x007fffff
+li			a4, 0x007fffff
+jal			ra, fadd_func
+
+# Normal + Subnormal = Subnormal 2
+li			a1, 0x00800000
+li			a2, 0x807fffff
+li			a3, 0x00000001
+li			a4, 0x00000001
+jal			ra, fadd_func
+
+# Normal + Subnormal = Subnormal 3
+li			a1, 0x00800000
+li			a2, 0x80000fff
+li			a3, 0x007ff001
+li			a4, 0x007ff001
+jal			ra, fadd_func
+
+# Normal + Subnormal = Subnormal 4
+li			a1, 0x00800000
+li			a2, 0x80000800
+li			a3, 0x007ff800
+li			a4, 0x007ff800
+jal			ra, fadd_func
+
+# Normal + Normal = Subnormal
+li			a1, 0x08800001
+li			a2, 0x88800000
+li			a3, 0x00010000
+li			a4, 0x00010000
+jal			ra, fadd_func
+
+# (Rand) + (-Rand) = (+0)
+li			a1, 0x46947000
+li			a2, 0xc6947000
+li			a3, 0x00000000
+li			a4, 0x00000000
+jal			ra, fadd_func
+
+# (+0) + (+0) = (+0)
+li			a1, 0x00000000
+li			a2, 0x00000000
+li			a3, 0x00000000
+li			a4, 0x00000000
+jal			ra, fadd_func
+
+# (-0) + (-0) = (-0)
+li			a1, 0x80000000
+li			a2, 0x80000000
+li			a3, 0x80000000
+li			a4, 0x80000000
+jal			ra, fadd_func
+
 jal			x0, fadd_end
 
 fadd_func:
