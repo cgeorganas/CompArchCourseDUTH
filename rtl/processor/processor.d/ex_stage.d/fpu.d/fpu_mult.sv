@@ -9,35 +9,14 @@ module fpu_mult(
 	input	logic	[31:0]	opb,
 	input	logic	[47:0]	mult_res,
 	input	logic			new_input,
+	input	logic			z_fl,
+	input	logic			subn_fl_a,
+	input	logic			subn_fl_b,
+	input	logic			inf_fl,
+	input	logic			nan_fl,
 	output	logic	[34:0]	out,
 	output	logic			busy
 );
-
-
-
-// SUBNORMAL FLAG
-logic			subn_fl_a, subn_fl_b, subn_fl;
-assign			subn_fl_a	= (~(|opa[30:23]))&&(|opa[22:0]);
-assign			subn_fl_b	= (~(|opb[30:23]))&&(|opb[22:0]);
-assign			subn_fl		= subn_fl_a||subn_fl_b;
-
-// ZERO FLAG
-logic			z_fl_a, z_fl_b, z_fl;
-assign			z_fl_a		= ~(|opa[30:0]);
-assign			z_fl_b		= ~(|opb[30:0]);
-assign			z_fl		= z_fl_a||z_fl_b;
-
-// INF FLAG
-logic			inf_fl_a, inf_fl_b, inf_fl;
-assign			inf_fl_a	= (&opa[30:23])&&(~(|opa[22:0]));
-assign			inf_fl_b	= (&opb[30:23])&&(~(|opb[22:0]));
-assign			inf_fl		= inf_fl_a||inf_fl_b;
-
-// NAN FLAG
-logic			nan_fl_a, nan_fl_b, nan_fl;
-assign			nan_fl_a = (&opa[30:23])&&(|opa[22:0]);
-assign			nan_fl_b = (&opb[30:23])&&(|opb[22:0]);
-assign			nan_fl = nan_fl_a||nan_fl_b;
 
 // SPECIAL CASE FLAG
 logic			sc_fl;

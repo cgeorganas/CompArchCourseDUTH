@@ -15,6 +15,32 @@ module fpu(
 	output	logic			fpu_busy
 );
 
+// ZERO FLAG
+logic			z_fl_a, z_fl_b, z_fl;
+assign			z_fl_a		= ~(|opa[30:0]);
+assign			z_fl_b		= ~(|opb[30:0]);
+assign			z_fl		= z_fl_a||z_fl_b;
+
+// SUBNORMAL FLAG
+logic			subn_fl_a, subn_fl_b, subn_fl;
+assign			subn_fl_a	= (~(|opa[30:23]))&&(|opa[22:0]);
+assign			subn_fl_b	= (~(|opb[30:23]))&&(|opb[22:0]);
+assign			subn_fl		= subn_fl_a||subn_fl_b;
+
+// INF FLAG
+logic			inf_fl_a, inf_fl_b, one_inf_fl, two_inf_fl, inf_fl;
+assign			inf_fl_a	= (&opa[30:23])&&(~(|opa[22:0]));
+assign			inf_fl_b	= (&opb[30:23])&&(~(|opb[22:0]));
+assign			one_inf_fl	= inf_fl_a^inf_fl_b;
+assign			two_inf_fl	= inf_fl_a&&inf_fl_b;
+assign			inf_fl		= inf_fl_a||inf_fl_b;
+
+// NAN FLAG
+logic			nan_fl_a, nan_fl_b, nan_fl;
+assign			nan_fl_a = (&opa[30:23])&&(|opa[22:0]);
+assign			nan_fl_b = (&opb[30:23])&&(|opb[22:0]);
+assign			nan_fl = nan_fl_a||nan_fl_b;
+
 logic [34:0] int2flt_out;
 fpu_int2flt fpu_int2flt_0(
 	.in				(opa),
@@ -31,6 +57,11 @@ fpu_mult fpu_mult_0(
 	.opb			(opb),
 	.mult_res		(mult_res),
 	.new_input		(new_input),
+	.z_fl			(z_fl),
+	.subn_fl_a		(subn_fl_a),
+	.subn_fl_b		(subn_fl_b),
+	.inf_fl			(inf_fl),
+	.nan_fl			(nan_fl),
 	.out			(mult_out),
 	.busy			(mult_busy)
 );
@@ -44,6 +75,10 @@ fpu_add fpu_add_0(
 	.opb_in			(opb),
 	.fsub			(alu_func==`ALU_FSUBS),
 	.new_input		(new_input),
+	.z_fl			(z_fl),
+	.one_inf_fl		(one_inf_fl),
+	.two_inf_fl		(two_inf_fl),
+	.nan_fl			(nan_fl),
 	.out			(add_out),
 	.busy			(add_busy)
 );

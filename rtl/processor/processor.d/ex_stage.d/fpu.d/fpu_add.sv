@@ -9,6 +9,10 @@ module fpu_add(
 	input	logic	[31:0]	opb_in,
 	input	logic			fsub,
 	input	logic			new_input,
+	input	logic			z_fl,
+	input	logic			one_inf_fl,
+	input	logic			two_inf_fl,
+	input	logic			nan_fl,
 	output	logic	[34:0]	out,
 	output	logic			busy
 );
@@ -33,32 +37,6 @@ assign	func = opa[31]^opb[31]^fsub;
 
 
 
-// SUBNORMAL FLAG
-logic			subn_fl_a, subn_fl_b, subn_fl;
-assign			subn_fl_a	= (~(|opa[30:23]))&&(|opa[22:0]);
-assign			subn_fl_b	= (~(|opb[30:23]))&&(|opb[22:0]);
-assign			subn_fl		= subn_fl_a||subn_fl_b;
-
-// ZERO FLAG
-logic			z_fl_a, z_fl_b, z_fl;
-assign			z_fl_a		= ~(|opa[30:0]);
-assign			z_fl_b		= ~(|opb[30:0]);
-assign			z_fl		= z_fl_a||z_fl_b;
-
-// INF FLAG
-logic			inf_fl_a, inf_fl_b, one_inf_fl, two_inf_fl;
-assign			inf_fl_a	= (&opa[30:23])&&(~(|opa[22:0]));
-assign			inf_fl_b	= (&opb[30:23])&&(~(|opb[22:0]));
-assign			one_inf_fl	= inf_fl_a^inf_fl_b;
-assign			two_inf_fl	= inf_fl_a&&inf_fl_b;
-
-// NAN FLAG
-logic			nan_fl_a, nan_fl_b, nan_fl;
-assign			nan_fl_a = (&opa[30:23])&&(|opa[22:0]);
-assign			nan_fl_b = (&opb[30:23])&&(|opb[22:0]);
-assign			nan_fl = nan_fl_a||nan_fl_b;
-
-
 // OUTPUT CALCULATION
 logic			sign;
 assign			sign = opa[31]^(swap&&fsub);
@@ -67,8 +45,8 @@ assign			sign = opa[31]^(swap&&fsub);
 // 9 bit sum, the bias becomes 254
 // Anything below 128 is subnormal, anything above 381 causes an overflow
 logic [8:0]		exp_a, exp_b, exp_diff, exp_init, exp, exp_out;
-assign			exp_a		= {1'b0, opa[30:23]} + {8'h0, subn_fl_a};
-assign			exp_b		= {1'b0, opb[30:23]} + {8'h0, subn_fl_b};
+assign			exp_a		= {1'b0, opa[30:23]} + {8'h0, (~(|opa[30:23]))&&(|opa[22:0])};
+assign			exp_b		= {1'b0, opb[30:23]} + {8'h0, (~(|opb[30:23]))&&(|opb[22:0])};
 assign			exp_diff	= exp_a - exp_b;
 assign			exp_init	= exp_a + 127;
 assign			exp_out		= exp - 127;
