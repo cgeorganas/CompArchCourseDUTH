@@ -2,6 +2,9 @@
 	`include "../sys_defs.vh"
 `endif
 
+`define POSZERO 32'h0000_0000
+`define NEGZERO 32'h8000_0000
+
 module fpu_add(
 	input	logic			clk,
 	input	logic			rst,
@@ -17,7 +20,7 @@ module fpu_add(
 	output	logic			busy
 );
 
-// OPERAND FILTERING
+// OPERAND SORTING
 logic			swap;
 assign			swap = (opa_in[30:0]<opb_in[30:0]);
 
@@ -32,25 +35,32 @@ always_comb begin
 		opb = opb_in;
 	end
 end
+
 logic	func; // 0 for addition, 1 for subtraction
 assign	func = opa[31]^opb[31]^fsub;
 
 
 
-// OUTPUT CALCULATION
+// OUTPUT SIGN
 logic			sign;
 assign			sign = opa[31]^(swap&&fsub);
 
 // OUTPUT EXPONENT
-// 9 bit sum, the bias becomes 254
+// Extended to 9 bits with a bias of 254, for easier overflow/underflow detection
 // Anything below 128 is subnormal, anything above 381 causes an overflow
-logic [8:0]		exp_a, exp_b, exp_diff, exp_init, exp, exp_out;
+logic [8:0]		exp_a, exp_b;
 assign			exp_a		= {1'b0, opa[30:23]} + {8'h0, (~(|opa[30:23]))&&(|opa[22:0])};
 assign			exp_b		= {1'b0, opb[30:23]} + {8'h0, (~(|opb[30:23]))&&(|opb[22:0])};
+
+logic [8:0]		exp_diff, exp_init, exp, exp_out;
 assign			exp_diff	= exp_a - exp_b;
 assign			exp_init	= exp_a + 127;
 assign			exp_out		= exp - 127;
 
+logic			ovf_fl;
+assign			ovf_fl	= (exp>381);
+
+// OUTPUT MANTISSA
 logic	[49:0]	mant_opa, mant_opb, mant_opb_init, mant, mant_init;
 assign			mant_opa		= {1'b0, |opa[30:23], opa[22:0], 25'h0};
 assign			mant_opb_init	= {1'b0, |opb[30:23], opb[22:0], 25'h0};
@@ -59,41 +69,13 @@ assign			mant_init		= func ? (mant_opa - mant_opb) : (mant_opa + mant_opb);
 
 
 
-// OVERFLOW/UNDERFLOW DETECTION
-logic			ovf_fl;
-assign			ovf_fl	= (exp>381);
-
-
-
-// Flag used to detect 0 result
-logic			z_res_fl;
+// SPECIAL CASES
+logic			z_res_fl; // Automatic 0 detection
 assign			z_res_fl = (opa[30:0]==opb[30:0])&&(func);
-logic			z_sign;
-always_comb begin
-	if (fsub) begin
-		z_sign = (opa_in==32'h8000_0000)&&(opb_in==32'h0);
-	end
-	else begin
-		z_sign = (opa_in==32'h8000_0000)&&(opb_in==32'h8000_0000);
-	end
-end
 
-// Flag used to detect when exp_diff is too large
-logic			skip_fl;
-assign			skip_fl = (exp_diff>25);
-
-// SPECIAL CASE FLAG
-logic			sc_fl;
+logic			skip_fl, sc_flag;
+assign			skip_fl = (exp_diff>25); // Diff is too large to matter
 assign			sc_fl = z_fl||one_inf_fl||two_inf_fl||nan_fl||skip_fl||z_res_fl;
-
-
-
-// SUBNORMAL ADJUSTMENT
-logic			subn_res_fl;
-assign			subn_res_fl = (exp<128);
-
-logic	[49:0]	subn_mant;
-assign			subn_mant = mant >> (127-exp);
 
 
 
@@ -118,43 +100,41 @@ end
 
 
 
+// SUBNORMAL ADJUSTMENT
+logic			subn_res_fl;
+assign			subn_res_fl = (exp<128);
+
+logic	[49:0]	subn_mant;
+assign			subn_mant = mant >> (127-exp);
+
+
+
 // OUTPUT SELECTION
-logic [34:0] normal_out;
-logic [33:0] opa_adj;
-
 always_comb begin
-
-	if (skip_fl) begin
-		if (func)	opa_adj = {opa[30:0], 3'b000} - 1;
-		else		opa_adj = {opa[30:0], 3'b001};
-		normal_out = {sign, opa_adj};
-	end
-	else if (ovf_fl) begin
-		normal_out = {sign, 8'hff, 23'h0, 3'b000};
-	end
-	else if (z_res_fl) begin
-		normal_out = {z_sign, 34'h0};
-	end
-	else if (subn_res_fl) begin
-		normal_out = {sign, 8'h00, subn_mant[49:25], |subn_mant[24:0]};
-	end
-	else begin
-		normal_out = {sign, exp_out[7:0], mant[48:24], |mant[23:0]};
-	end
-
-	if (((z_fl)&&(~(z_res_fl)))||one_inf_fl) begin
-		out = {sign, opa[30:0], 3'b000};
-	end
-	else if (nan_fl) begin
+	if (nan_fl) begin
 		out = {opa, 3'b000};
 	end
 	else if (two_inf_fl) begin
 		out = (func) ? {1'b0, 9'h1ff, 22'h1, 3'h0} : {sign, opa[30:0], 3'b000};
 	end
-	else begin
-		out = normal_out;
+	else if (z_res_fl) begin
+		out = {35'h0};
 	end
-
+	else if (one_inf_fl||z_fl) begin
+		out = {sign, opa[30:0], 3'b000};
+	end
+	else if (skip_fl) begin
+		out = {sign, opa[30:0], 3'b000} - {35'h0, (func)} + {35'h0, (~func)};
+	end
+	else if (ovf_fl) begin
+		out = {sign, 8'hff, 23'h0, 3'b000};
+	end
+	else if (subn_res_fl) begin
+		out = {sign, 8'h00, subn_mant[49:25], |subn_mant[24:0]};
+	end
+	else begin
+		out = {sign, exp_out[7:0], mant[48:24], |mant[23:0]};
+	end
 end
 
 endmodule
