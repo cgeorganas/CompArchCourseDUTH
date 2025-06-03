@@ -41,11 +41,16 @@ assign			nan_fl_a = (&opa[30:23])&&(|opa[22:0]);
 assign			nan_fl_b = (&opb[30:23])&&(|opb[22:0]);
 assign			nan_fl = nan_fl_a||nan_fl_b;
 
+logic int2flt_busy;
 logic [34:0] int2flt_out;
 fpu_int2flt fpu_int2flt_0(
+	.clk			(clk),
+	.rst			(rst),
 	.in				(opa),
 	.signed_input	(alu_func==`ALU_FCVTSW),
-	.out			(int2flt_out)
+	.new_input		(new_input),
+	.out			(int2flt_out),
+	.busy			(int2flt_busy)
 );
 
 logic mult_busy;
@@ -117,6 +122,8 @@ always_comb begin
 	endcase
 
 	case (alu_func)
+		`ALU_FCVTSW:	fpu_busy = int2flt_busy;
+		`ALU_FCVTSWU:	fpu_busy = int2flt_busy;
 		`ALU_FMULS:		fpu_busy = mult_busy;
 		`ALU_FADDS:		fpu_busy = add_busy;
 		`ALU_FSUBS:		fpu_busy = add_busy;
