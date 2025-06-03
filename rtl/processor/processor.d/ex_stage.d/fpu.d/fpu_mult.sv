@@ -7,10 +7,10 @@ module fpu_mult(
 	input	logic			rst,
 	input	logic	[31:0]	opa,
 	input	logic	[31:0]	opb,
-	input	logic	[47:0]	mult_result,
+	input	logic	[47:0]	mult_res,
 	input	logic			new_input,
 	output	logic	[34:0]	out,
-	output	logic			fpu_mult_busy
+	output	logic			busy
 );
 
 
@@ -63,7 +63,7 @@ assign			exp_out = exp - 126;
 logic [47:0]	mant;
 
 // Busy until MSB is 1
-assign			fpu_mult_busy = (new_input)||((~mant[47])&&(~sc_fl));
+assign			busy = (new_input)||((~mant[47])&&(~sc_fl));
 
 always_ff @(posedge clk) begin
 	if (rst) begin
@@ -72,10 +72,10 @@ always_ff @(posedge clk) begin
 	end
 	else begin
 		if (new_input) begin
-			mant	<= mult_result;
+			mant	<= mult_res;
 			exp		<= exp_initial;
 		end
-		else if (fpu_mult_busy) begin
+		else if (busy) begin
 			mant	<= mant << 1;
 			exp		<= exp - 1;
 		end

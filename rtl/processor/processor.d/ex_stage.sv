@@ -78,12 +78,12 @@ logic new_input;
 assign new_input = (prev_opa!=opa)||(prev_opb!=opb)||(prev_func!=ID_EX_alu_func);
 
 // Multiplier
-logic signed [65:0] mult_result;
+logic signed [65:0] mult_res;
 multipler multipler_0(
 	.opa			(opa),
 	.opb			(opb),
 	.ID_EX_alu_func	(ID_EX_alu_func),
-	.mult_result	(mult_result)
+	.mult_res		(mult_res)
 );
 
 // Divider
@@ -108,8 +108,8 @@ fpu fpu_0(
 	.rst			(rst),
 	.opa			(opa),
 	.opb			(opb),
-	.mult_result	(mult_result[47:0]),
-	.ID_EX_alu_func	(ID_EX_alu_func),
+	.mult_res		(mult_res[47:0]),
+	.alu_func		(ID_EX_alu_func),
 	.rm				(ID_EX_imm[2:0]),
 	.new_input		(new_input),
 	.fpu_res		(fpu_res),
@@ -133,10 +133,10 @@ always_comb begin
 		`ALU_SRA:		EX_alu_res = $signed(opa) >>> opb[4:0]; 
 		`ALU_SLT:		EX_alu_res = {31'h0, ($signed(opa)< $signed(opb))};
 		`ALU_SLTU:		EX_alu_res = {31'h0, (opa < opb)};
-		`ALU_MUL:		EX_alu_res = mult_result[31:0];
-		`ALU_MULH:		EX_alu_res = mult_result[63:32];
-		`ALU_MULHSU:	EX_alu_res = mult_result[63:32];
-		`ALU_MULHU:		EX_alu_res = mult_result[63:32];
+		`ALU_MUL:		EX_alu_res = mult_res[31:0];
+		`ALU_MULH:		EX_alu_res = mult_res[63:32];
+		`ALU_MULHSU:	EX_alu_res = mult_res[63:32];
+		`ALU_MULHU:		EX_alu_res = mult_res[63:32];
 		`ALU_DIV:		EX_alu_res = quotient;
 		`ALU_DIVU:		EX_alu_res = quotient;
 		`ALU_REM:		EX_alu_res = remainder;

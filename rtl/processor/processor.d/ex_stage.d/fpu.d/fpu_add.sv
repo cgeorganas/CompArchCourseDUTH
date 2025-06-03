@@ -10,7 +10,7 @@ module fpu_add(
 	input	logic			fsub,
 	input	logic			new_input,
 	output	logic	[34:0]	out,
-	output	logic			fpu_add_busy
+	output	logic			busy
 );
 
 // OPERAND FILTERING
@@ -121,7 +121,7 @@ assign			subn_mant = mant >> (127-exp);
 
 
 // NORMALISE RESULT
-assign	fpu_add_busy = (new_input)||((~mant[48])&&(~sc_fl));
+assign	busy = (new_input)||((~mant[48])&&(~sc_fl));
 always_ff @(posedge clk) begin
 	if (rst) begin
 		mant	<= 49'h0;
@@ -132,7 +132,7 @@ always_ff @(posedge clk) begin
 			mant	<= mant_init;
 			exp		<= exp_init + 1;
 		end
-		else if (fpu_add_busy) begin
+		else if (busy) begin
 			mant	<= mant << 1;
 			exp		<= exp - 1;
 		end

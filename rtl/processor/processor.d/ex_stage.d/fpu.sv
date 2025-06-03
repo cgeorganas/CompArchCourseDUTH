@@ -7,78 +7,88 @@ module fpu(
 	input	logic			rst,
 	input	logic	[31:0]	opa,
 	input	logic	[31:0]	opb,
-	input	logic	[47:0]	mult_result,
-	input	logic	[4:0]	ID_EX_alu_func,
+	input	logic	[47:0]	mult_res,
+	input	logic	[4:0]	alu_func,
 	input	logic	[2:0]	rm,
 	input	logic			new_input,
 	output	logic	[31:0]	fpu_res,
 	output	logic			fpu_busy
 );
 
-logic [34:0] fpu_int2flt;
+logic [34:0] int2flt_out;
 fpu_int2flt fpu_int2flt_0(
 	.in				(opa),
-	.signed_input	(ID_EX_alu_func==`ALU_FCVTSW),
-	.out			(fpu_int2flt)
+	.signed_input	(alu_func==`ALU_FCVTSW),
+	.out			(int2flt_out)
 );
 
-logic [31:0] fpu_flt2int;
-fpu_flt2int fpu_flt2int_0(
-	.in				(opa),
-	.rm				(rm),
-	.signed_output	(ID_EX_alu_func==`ALU_FCVTWS),
-	.out			(fpu_flt2int)
-);
-
-logic [34:0] fpu_mult;
-logic fpu_mult_busy;
+logic mult_busy;
+logic [34:0] mult_out;
 fpu_mult fpu_mult_0(
 	.clk			(clk),
 	.rst			(rst),
 	.opa			(opa),
 	.opb			(opb),
-	.mult_result	(mult_result[47:0]),
+	.mult_res		(mult_res),
 	.new_input		(new_input),
-	.out			(fpu_mult),
-	.fpu_mult_busy	(fpu_mult_busy)
+	.out			(mult_out),
+	.busy			(mult_busy)
 );
 
-logic [34:0] fpu_add;
-logic fpu_add_busy;
+logic add_busy;
+logic [34:0] add_out;
 fpu_add fpu_add_0(
 	.clk			(clk),
 	.rst			(rst),
 	.opa_in			(opa),
 	.opb_in			(opb),
-	.fsub			(ID_EX_alu_func==`ALU_FSUBS),
+	.fsub			(alu_func==`ALU_FSUBS),
 	.new_input		(new_input),
-	.out			(fpu_add),
-	.fpu_add_busy	(fpu_add_busy)
+	.out			(add_out),
+	.busy			(add_busy)
 );
 
-logic [34:0] fpu_res_raw;
+logic [34:0] round_in;
 always_comb begin
-	case (ID_EX_alu_func)
-		`ALU_FMULS:	fpu_res_raw = fpu_mult;
-		`ALU_FADDS:	fpu_res_raw = fpu_add;
-		`ALU_FSUBS:	fpu_res_raw = fpu_add;
-		default:	fpu_res_raw = fpu_int2flt;
+	case (alu_func)
+		`ALU_FMULS:	round_in = mult_out;
+		`ALU_FADDS:	round_in = add_out;
+		`ALU_FSUBS:	round_in = add_out;
+		default:	round_in = int2flt_out;
 	endcase
 end
-logic [31:0] fpu_res_rounded;
+
+logic [31:0] round_out;
 fpu_round fpu_round_0 (
-	.in				(fpu_res_raw),
+	.in				(round_in),
 	.rm				(rm),
-	.out			(fpu_res_rounded)
+	.out			(round_out)
+);
+
+logic [31:0] flt2int_out;
+fpu_flt2int fpu_flt2int_0(
+	.in				(opa),
+	.rm				(rm),
+	.signed_output	(alu_func==`ALU_FCVTWS),
+	.out			(flt2int_out)
 );
 
 always_comb begin
-	case (ID_EX_alu_func)
-		`ALU_FCVTWS, `ALU_FCVTWUS:	fpu_res = fpu_flt2int;
-		default:					fpu_res = fpu_res_rounded;
+
+	case (alu_func)
+		`ALU_FCVTWS:	fpu_res = flt2int_out;
+		`ALU_FCVTWUS:	fpu_res = flt2int_out;
+		default:		fpu_res = round_out;
 	endcase
+
+	case (alu_func)
+		`ALU_FMULS:		fpu_busy = mult_busy;
+		`ALU_FADDS:		fpu_busy = add_busy;
+		`ALU_FSUBS:		fpu_busy = add_busy;
+		default:		fpu_busy = `FALSE;
+	endcase
+	
 end
 
-assign fpu_busy = (fpu_mult_busy&&(ID_EX_alu_func==`ALU_FMULS))||(fpu_add_busy&&((ID_EX_alu_func==`ALU_FADDS)||(ID_EX_alu_func==`ALU_FSUBS)));
 
 endmodule
