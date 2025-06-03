@@ -2,9 +2,6 @@
 	`include "../sys_defs.vh"
 `endif
 
-`define POSZERO 32'h0000_0000
-`define NEGZERO 32'h8000_0000
-
 module fpu_add(
 	input	logic			clk,
 	input	logic			rst,
@@ -111,30 +108,14 @@ assign			subn_mant = mant >> (127-exp);
 
 // OUTPUT SELECTION
 always_comb begin
-	if (nan_fl) begin
-		out = {opa, 3'b000};
-	end
-	else if (two_inf_fl) begin
-		out = (func) ? {1'b0, 9'h1ff, 22'h1, 3'h0} : {sign, opa[30:0], 3'b000};
-	end
-	else if (z_res_fl) begin
-		out = {35'h0};
-	end
-	else if (one_inf_fl||z_fl) begin
-		out = {sign, opa[30:0], 3'b000};
-	end
-	else if (skip_fl) begin
-		out = {sign, opa[30:0], 3'b000} - {35'h0, (func)} + {35'h0, (~func)};
-	end
-	else if (ovf_fl) begin
-		out = {sign, 8'hff, 23'h0, 3'b000};
-	end
-	else if (subn_res_fl) begin
-		out = {sign, 8'h00, subn_mant[49:25], |subn_mant[24:0]};
-	end
-	else begin
-		out = {sign, exp_out[7:0], mant[48:24], |mant[23:0]};
-	end
+	if (nan_fl)					out = {opa, 3'b000};
+	else if (two_inf_fl)		out = (func) ? {1'b0, 9'h1ff, 22'h1, 3'h0} : {sign, opa[30:0], 3'b000};
+	else if (z_res_fl)			out = {35'h0};
+	else if (one_inf_fl||z_fl)	out = {sign, opa[30:0], 3'b000};
+	else if (skip_fl)			out = {sign, opa[30:0], 3'b000} - {35'h0, (func)} + {35'h0, (~func)};
+	else if (ovf_fl)			out = {sign, 8'hff, 23'h0, 3'b000};
+	else if (subn_res_fl)		out = {sign, 8'h00, subn_mant[49:25], |subn_mant[24:0]};
+	else						out = {sign, exp_out[7:0], mant[48:24], |mant[23:0]};
 end
 
 endmodule
