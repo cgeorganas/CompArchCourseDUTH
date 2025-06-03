@@ -51,18 +51,17 @@ assign			exp_diff	= exp_a - exp_b;
 assign			exp_init	= exp_a + 127;
 assign			exp_out		= exp - 127;
 
-logic	[48:0]	mant_opa, mant_opb, mant_opb_init, mant, mant_init;
-assign			mant_opa		= {1'b0, |opa[30:23], opa[22:0], 24'h0};
-assign			mant_opb_init	= {1'b0, |opb[30:23], opb[22:0], 24'h0};
+logic	[49:0]	mant_opa, mant_opb, mant_opb_init, mant, mant_init;
+assign			mant_opa		= {1'b0, |opa[30:23], opa[22:0], 25'h0};
+assign			mant_opb_init	= {1'b0, |opb[30:23], opb[22:0], 25'h0};
 assign			mant_opb		= mant_opb_init >> (exp_diff);
 assign			mant_init		= func ? (mant_opa - mant_opb) : (mant_opa + mant_opb);
 
 
 
 // OVERFLOW/UNDERFLOW DETECTION
-logic			ovf_fl, unf_fl;
+logic			ovf_fl;
 assign			ovf_fl	= (exp>381);
-assign			unf_fl	= (exp<104);
 
 
 
@@ -81,7 +80,7 @@ end
 
 // Flag used to detect when exp_diff is too large
 logic			skip_fl;
-assign			skip_fl = (exp_diff>27);
+assign			skip_fl = (exp_diff>25);
 
 // SPECIAL CASE FLAG
 logic			sc_fl;
@@ -93,16 +92,16 @@ assign			sc_fl = z_fl||one_inf_fl||two_inf_fl||nan_fl||skip_fl||z_res_fl;
 logic			subn_res_fl;
 assign			subn_res_fl = (exp<128);
 
-logic	[48:0]	subn_mant;
+logic	[49:0]	subn_mant;
 assign			subn_mant = mant >> (127-exp);
 
 
 
 // NORMALISE RESULT
-assign	busy = (new_input)||((~mant[48])&&(~sc_fl));
+assign	busy = (new_input)||((~mant[49])&&(~sc_fl));
 always_ff @(posedge clk) begin
 	if (rst) begin
-		mant	<= 49'h0;
+		mant	<= 50'h0;
 		exp		<= 9'h0;
 	end
 	else begin
@@ -137,10 +136,10 @@ always_comb begin
 		normal_out = {z_sign, 34'h0};
 	end
 	else if (subn_res_fl) begin
-		normal_out = {sign, 8'h00, subn_mant[48:24], |subn_mant[23:0]};
+		normal_out = {sign, 8'h00, subn_mant[49:25], |subn_mant[24:0]};
 	end
 	else begin
-		normal_out = {sign, exp_out[7:0], mant[47:23], |mant[22:0]};
+		normal_out = {sign, exp_out[7:0], mant[48:24], |mant[23:0]};
 	end
 
 	if (((z_fl)&&(~(z_res_fl)))||one_inf_fl) begin

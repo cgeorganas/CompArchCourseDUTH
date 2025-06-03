@@ -35,7 +35,7 @@ assign			sign = opa[31]^opb[31];
 // Anything below 128 is subnormal, anything above 381 causes an overflow
 logic [8:0]		exp_initial, exp, exp_out;
 assign			exp_initial = {1'b0, opa[30:23]} + {1'b0, opb[30:23]} + {8'h0, subn_fl_a} + {8'h0, subn_fl_b};
-assign			exp_out = exp - 126;
+assign			exp_out = exp - 127;
 
 
 // OUTPUT MANTISSA
@@ -52,7 +52,7 @@ always_ff @(posedge clk) begin
 	else begin
 		if (new_input) begin
 			mant	<= mult_res;
-			exp		<= exp_initial;
+			exp		<= exp_initial + 1;
 		end
 		else if (busy) begin
 			mant	<= mant << 1;
@@ -72,10 +72,10 @@ assign			unf_fl	= (exp<104);
 
 // SUBNORMAL ADJUSTMENT
 logic			subn_res_fl;
-assign			subn_res_fl = (exp<127);
+assign			subn_res_fl = (exp<128);
 
 logic	[47:0]	subn_mant;
-assign			subn_mant = mant >> (126-exp);
+assign			subn_mant = mant >> (127-exp);
 
 
 
